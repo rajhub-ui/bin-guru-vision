@@ -14,6 +14,7 @@ import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedVideoRouteImport } from './routes/_authenticated/video'
 import { Route as AuthenticatedScanRouteImport } from './routes/_authenticated/scan'
+import { Route as AuthenticatedPdfRouteImport } from './routes/_authenticated/pdf'
 import { Route as AuthenticatedLiveRouteImport } from './routes/_authenticated/live'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 
@@ -41,6 +42,11 @@ const AuthenticatedScanRoute = AuthenticatedScanRouteImport.update({
   path: '/scan',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedPdfRoute = AuthenticatedPdfRouteImport.update({
+  id: '/pdf',
+  path: '/pdf',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedLiveRoute = AuthenticatedLiveRouteImport.update({
   id: '/live',
   path: '/live',
@@ -57,6 +63,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/live': typeof AuthenticatedLiveRoute
+  '/pdf': typeof AuthenticatedPdfRoute
   '/scan': typeof AuthenticatedScanRoute
   '/video': typeof AuthenticatedVideoRoute
 }
@@ -65,6 +72,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/live': typeof AuthenticatedLiveRoute
+  '/pdf': typeof AuthenticatedPdfRoute
   '/scan': typeof AuthenticatedScanRoute
   '/video': typeof AuthenticatedVideoRoute
 }
@@ -75,14 +83,22 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/live': typeof AuthenticatedLiveRoute
+  '/_authenticated/pdf': typeof AuthenticatedPdfRoute
   '/_authenticated/scan': typeof AuthenticatedScanRoute
   '/_authenticated/video': typeof AuthenticatedVideoRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth' | '/dashboard' | '/live' | '/scan' | '/video'
+  fullPaths:
+    | '/'
+    | '/auth'
+    | '/dashboard'
+    | '/live'
+    | '/pdf'
+    | '/scan'
+    | '/video'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/dashboard' | '/live' | '/scan' | '/video'
+  to: '/' | '/auth' | '/dashboard' | '/live' | '/pdf' | '/scan' | '/video'
   id:
     | '__root__'
     | '/'
@@ -90,6 +106,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/_authenticated/dashboard'
     | '/_authenticated/live'
+    | '/_authenticated/pdf'
     | '/_authenticated/scan'
     | '/_authenticated/video'
   fileRoutesById: FileRoutesById
@@ -137,6 +154,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedScanRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/pdf': {
+      id: '/_authenticated/pdf'
+      path: '/pdf'
+      fullPath: '/pdf'
+      preLoaderRoute: typeof AuthenticatedPdfRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/live': {
       id: '/_authenticated/live'
       path: '/live'
@@ -157,6 +181,7 @@ declare module '@tanstack/react-router' {
 interface AuthenticatedRouteChildren {
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedLiveRoute: typeof AuthenticatedLiveRoute
+  AuthenticatedPdfRoute: typeof AuthenticatedPdfRoute
   AuthenticatedScanRoute: typeof AuthenticatedScanRoute
   AuthenticatedVideoRoute: typeof AuthenticatedVideoRoute
 }
@@ -164,6 +189,7 @@ interface AuthenticatedRouteChildren {
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedLiveRoute: AuthenticatedLiveRoute,
+  AuthenticatedPdfRoute: AuthenticatedPdfRoute,
   AuthenticatedScanRoute: AuthenticatedScanRoute,
   AuthenticatedVideoRoute: AuthenticatedVideoRoute,
 }
