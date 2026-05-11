@@ -14,16 +14,187 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      badges: {
+        Row: {
+          description: string
+          icon: string
+          id: string
+          name: string
+          slug: string
+          threshold: number
+        }
+        Insert: {
+          description: string
+          icon: string
+          id?: string
+          name: string
+          slug: string
+          threshold?: number
+        }
+        Update: {
+          description?: string
+          icon?: string
+          id?: string
+          name?: string
+          slug?: string
+          threshold?: number
+        }
+        Relationships: []
+      }
+      chat_messages: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          role: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          role: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          role?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      detections: {
+        Row: {
+          carbon_grams: number
+          confidence: number
+          created_at: string
+          id: string
+          image_path: string | null
+          predicted_class: Database["public"]["Enums"]["waste_class"]
+          source: Database["public"]["Enums"]["detection_source"]
+          user_id: string
+        }
+        Insert: {
+          carbon_grams?: number
+          confidence: number
+          created_at?: string
+          id?: string
+          image_path?: string | null
+          predicted_class: Database["public"]["Enums"]["waste_class"]
+          source: Database["public"]["Enums"]["detection_source"]
+          user_id: string
+        }
+        Update: {
+          carbon_grams?: number
+          confidence?: number
+          created_at?: string
+          id?: string
+          image_path?: string | null
+          predicted_class?: Database["public"]["Enums"]["waste_class"]
+          source?: Database["public"]["Enums"]["detection_source"]
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          display_name: string | null
+          eco_score: number
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          display_name?: string | null
+          eco_score?: number
+          id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          display_name?: string | null
+          eco_score?: number
+          id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      user_badges: {
+        Row: {
+          badge_id: string
+          earned_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          badge_id: string
+          earned_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          badge_id?: string
+          earned_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_badges_badge_id_fkey"
+            columns: ["badge_id"]
+            isOneToOne: false
+            referencedRelation: "badges"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "user"
+      detection_source: "image" | "live" | "video" | "pdf"
+      waste_class:
+        | "plastic"
+        | "paper"
+        | "metal"
+        | "glass"
+        | "organic"
+        | "ewaste"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +321,10 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "user"],
+      detection_source: ["image", "live", "video", "pdf"],
+      waste_class: ["plastic", "paper", "metal", "glass", "organic", "ewaste"],
+    },
   },
 } as const
