@@ -101,7 +101,7 @@ function AuthPage() {
                   <Label htmlFor="pw-in">Password</Label>
                   <Input id="pw-in" type="password" required value={password} onChange={(e) => setPassword(e.target.value)} />
                 </div>
-                <Button type="submit" disabled={loading} className="w-full bg-[var(--gradient-primary)] text-primary-foreground hover:opacity-90">
+                <Button type="submit" disabled={loading} style={{ background: "var(--gradient-primary)" }} className="w-full text-primary-foreground hover:opacity-90">
                   {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Sign in
                 </Button>
               </form>
@@ -122,7 +122,7 @@ function AuthPage() {
                   <Label htmlFor="pw-up">Password</Label>
                   <Input id="pw-up" type="password" required minLength={6} value={password} onChange={(e) => setPassword(e.target.value)} />
                 </div>
-                <Button type="submit" disabled={loading} className="w-full bg-[var(--gradient-primary)] text-primary-foreground hover:opacity-90">
+                <Button type="submit" disabled={loading} style={{ background: "var(--gradient-primary)" }} className="w-full text-primary-foreground hover:opacity-90">
                   {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Create account
                 </Button>
               </form>

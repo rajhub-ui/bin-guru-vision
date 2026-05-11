@@ -16,7 +16,23 @@ export interface ClassifyResult {
 
 const FN_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/classify-waste`;
 
+// In-memory cache: identical images skip the network round-trip entirely.
+const CACHE_MAX = 50;
+const cache = new Map<string, ClassifyResult>();
+
+async function hashBase64(b64: string): Promise<string> {
+  // Sample to keep hashing cheap on big images
+  const sample = b64.length > 32_000 ? b64.slice(0, 16_000) + b64.slice(-16_000) : b64;
+  const bytes = new TextEncoder().encode(sample);
+  const buf = await crypto.subtle.digest("SHA-256", bytes);
+  return Array.from(new Uint8Array(buf)).map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+
 async function callClassify(imageBase64: string, mimeType: string): Promise<ClassifyResult> {
+  const key = await hashBase64(imageBase64);
+  const cached = cache.get(key);
+  if (cached) return cached;
+
   const { data: { session } } = await supabase.auth.getSession();
   const res = await fetch(FN_URL, {
     method: "POST",
@@ -29,6 +45,10 @@ async function callClassify(imageBase64: string, mimeType: string): Promise<Clas
   });
   const data = await res.json();
   if (!res.ok) return { items: [], summary: "", error: data.error ?? `HTTP ${res.status}` };
+
+  // LRU-ish trim
+  if (cache.size >= CACHE_MAX) cache.delete(cache.keys().next().value as string);
+  cache.set(key, data);
   return data;
 }
 
