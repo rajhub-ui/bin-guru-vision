@@ -72,10 +72,7 @@ export async function logDetection(opts: {
     carbon_grams: opts.carbon_grams,
     image_path: opts.image_path ?? null,
   });
-  // bump eco score: +confidence*10 rounded
   const inc = Math.max(1, Math.round(opts.confidence * 10));
-  await supabase.rpc("noop").catch(() => {});
-  // simple update: read + write
   const { data: profile } = await supabase.from("profiles").select("eco_score").eq("id", user.id).maybeSingle();
   if (profile) {
     await supabase.from("profiles").update({ eco_score: (profile.eco_score ?? 0) + inc }).eq("id", user.id);
