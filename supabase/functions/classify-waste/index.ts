@@ -26,11 +26,11 @@ serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY missing");
 
-    const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    const callModel = (model: string) => fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" },
       body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
+        model,
         messages: [
           { role: "system", content: SYSTEM },
           { role: "user", content: [
@@ -42,11 +42,26 @@ serve(async (req) => {
       }),
     });
 
-    if (!res.ok) {
-      const t = await res.text();
-      console.error("AI gateway error", res.status, t);
-      if (res.status === 429) return new Response(JSON.stringify({ error: "Rate limit reached. Try again shortly." }), { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } });
-      if (res.status === 402) return new Response(JSON.stringify({ error: "AI credits exhausted. Add funds in Settings → Workspace → Usage." }), { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    const models = ["google/gemini-2.5-flash", "google/gemini-2.5-flash-lite"];
+    const delays = [0, 800, 2000];
+    let res: Response | null = null;
+    outer: for (const model of models) {
+      for (const wait of delays) {
+        if (wait) await new Promise((r) => setTimeout(r, wait));
+        res = await callModel(model);
+        if (res.ok) break outer;
+        if (res.status !== 429) break;
+        console.warn(`429 from ${model}, retrying after ${wait}ms`);
+      }
+      if (res && res.status !== 429) break;
+    }
+
+    if (!res || !res.ok) {
+      const status = res?.status ?? 500;
+      const t = res ? await res.text() : "no response";
+      console.error("AI gateway error", status, t);
+      if (status === 429) return new Response(JSON.stringify({ error: "AI is busy right now — please retry in a few seconds.", retryable: true }), { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      if (status === 402) return new Response(JSON.stringify({ error: "AI credits exhausted. Add funds in Settings → Workspace → Usage." }), { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } });
       return new Response(JSON.stringify({ error: "Vision request failed" }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
     const data = await res.json();
