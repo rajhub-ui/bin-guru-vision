@@ -2,9 +2,10 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { DISPOSAL, type WasteClass } from "@/lib/disposal";
-import { Trophy, Leaf, Recycle, TrendingUp, Trash2 } from "lucide-react";
+import { Trophy, Leaf, Recycle, TrendingUp, Trash2, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { exportDetectionsPDF } from "@/lib/report";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({ meta: [{ title: "Dashboard — EcoLens AI" }] }),
