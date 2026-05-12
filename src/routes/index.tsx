@@ -123,7 +123,7 @@ function Landing() {
           <p className="mt-3 text-muted-foreground max-w-lg mx-auto">
             Track your eco score, unlock badges, and watch your carbon savings add up — one scan at a time.
           </p>
-          <Button asChild size="lg" className="mt-6 bg-[var(--gradient-primary)] text-primary-foreground hover:opacity-90">
+          <Button asChild size="lg" style={{ background: "var(--gradient-primary)" }} className="mt-6 text-primary-foreground eco-shadow hover:opacity-90 font-semibold">
             <Link to="/auth">Create your account <Leaf className="ml-1 h-4 w-4" /></Link>
           </Button>
         </div>
