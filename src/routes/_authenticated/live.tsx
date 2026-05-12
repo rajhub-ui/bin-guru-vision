@@ -1,19 +1,31 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Play, Square, Loader2 } from "lucide-react";
-import { toast } from "sonner";
+import { Play, Square, Loader2, Camera as CameraIcon, Sparkles } from "lucide-react";
 import { classifyCanvas, logDetection, type DetectedItem } from "@/lib/scan";
-import { DISPOSAL } from "@/lib/disposal";
+import { DISPOSAL, DECOMPOSITION } from "@/lib/disposal";
 
 export const Route = createFileRoute("/_authenticated/live")({
-  head: () => ({ meta: [{ title: "Live detection — EcoLens AI" }] }),
+  head: () => ({ meta: [{ title: "Live AR detection — EcoLens AI" }] }),
   component: LivePage,
 });
 
+// Distinct AR overlay color per class
+const CLASS_COLORS: Record<string, string> = {
+  plastic: "#38bdf8",
+  paper:   "#f59e0b",
+  metal:   "#94a3b8",
+  glass:   "#34d399",
+  organic: "#84cc16",
+  ewaste:  "#f43f5e",
+  cloth:   "#a78bfa",
+};
+
 function LivePage() {
   const videoRef = useRef<HTMLVideoElement>(null);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const captureRef = useRef<HTMLCanvasElement>(null);
+  const overlayRef = useRef<HTMLCanvasElement>(null);
+  const wrapRef = useRef<HTMLDivElement>(null);
   const [running, setRunning] = useState(false);
   const [items, setItems] = useState<DetectedItem[]>([]);
   const [busy, setBusy] = useState(false);
@@ -28,7 +40,7 @@ function LivePage() {
       }
       setRunning(true);
     } catch {
-      toast.error("Could not access camera. Check permissions.");
+      // silent
     }
   };
 
@@ -38,20 +50,70 @@ function LivePage() {
     stream?.getTracks().forEach((t) => t.stop());
     if (v) v.srcObject = null;
     setRunning(false);
+    setItems([]);
     if (intervalRef.current) window.clearInterval(intervalRef.current);
+    const o = overlayRef.current;
+    if (o) o.getContext("2d")?.clearRect(0, 0, o.width, o.height);
   };
+
+  // Draw AR boxes whenever items change
+  useEffect(() => {
+    const o = overlayRef.current;
+    const wrap = wrapRef.current;
+    if (!o || !wrap) return;
+    const w = wrap.clientWidth, h = wrap.clientHeight;
+    o.width = w; o.height = h;
+    const ctx = o.getContext("2d")!;
+    ctx.clearRect(0, 0, w, h);
+    items.forEach((it) => {
+      if (!it.box) return;
+      const [x, y, bw, bh] = it.box;
+      const px = x * w, py = y * h, pw = bw * w, ph = bh * h;
+      const color = CLASS_COLORS[it.class] ?? "#22c55e";
+      // Glow box
+      ctx.save();
+      ctx.shadowColor = color;
+      ctx.shadowBlur = 18;
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 3;
+      ctx.strokeRect(px, py, pw, ph);
+      // Corner brackets for AR feel
+      const c = Math.min(20, pw / 4, ph / 4);
+      ctx.lineWidth = 5;
+      [[px,py,1,1],[px+pw,py,-1,1],[px,py+ph,1,-1],[px+pw,py+ph,-1,-1]].forEach(([cx,cy,sx,sy]) => {
+        ctx.beginPath();
+        ctx.moveTo(cx as number, (cy as number) + (sy as number) * c);
+        ctx.lineTo(cx as number, cy as number);
+        ctx.lineTo((cx as number) + (sx as number) * c, cy as number);
+        ctx.stroke();
+      });
+      ctx.restore();
+      // Label pill
+      const label = `${DISPOSAL[it.class].emoji} ${it.label} · ${Math.round(it.confidence * 100)}%`;
+      ctx.font = "600 13px system-ui, sans-serif";
+      const tw = ctx.measureText(label).width + 14;
+      const ly = py > 26 ? py - 8 : py + ph + 22;
+      ctx.fillStyle = color;
+      ctx.beginPath();
+      (ctx as any).roundRect?.(px, ly - 18, tw, 22, 6);
+      if (!(ctx as any).roundRect) ctx.fillRect(px, ly - 18, tw, 22);
+      ctx.fill();
+      ctx.fillStyle = "#0a0a0a";
+      ctx.fillText(label, px + 7, ly - 3);
+    });
+  }, [items]);
 
   useEffect(() => {
     if (!running) return;
     intervalRef.current = window.setInterval(async () => {
-      const v = videoRef.current; const c = canvasRef.current;
+      const v = videoRef.current; const c = captureRef.current;
       if (!v || !c || busy || v.videoWidth === 0) return;
       setBusy(true);
-      c.width = 480; c.height = (480 * v.videoHeight) / v.videoWidth;
+      c.width = 640; c.height = (640 * v.videoHeight) / v.videoWidth;
       c.getContext("2d")!.drawImage(v, 0, 0, c.width, c.height);
       const res = await classifyCanvas(c);
       setBusy(false);
-      if (res.error) return;
+      if (res.error) return; // silent
       setItems(res.items);
       for (const it of res.items) {
         logDetection({ source: "live", predicted_class: it.class, confidence: it.confidence, carbon_grams: DISPOSAL[it.class].carbonGramsSaved });
@@ -63,43 +125,81 @@ function LivePage() {
   useEffect(() => () => stop(), []);
 
   return (
-    <div className="max-w-5xl mx-auto">
-      <header className="mb-6">
-        <h1 className="text-4xl font-bold">Live camera</h1>
-        <p className="text-muted-foreground mt-2">Hold an item up to your camera. Frames are sent every 2.5s.</p>
+    <div className="max-w-6xl mx-auto">
+      <header className="mb-6 flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <h1 className="text-4xl font-bold flex items-center gap-2">
+            Live AR detection <Sparkles className="h-6 w-6 text-primary" />
+          </h1>
+          <p className="text-muted-foreground mt-2">Point your camera at one or more items — EcoLens overlays AR boxes around each one.</p>
+        </div>
+        {!running ? (
+          <Button
+            onClick={start}
+            size="lg"
+            style={{ background: "var(--gradient-primary)" }}
+            className="text-primary-foreground eco-shadow hover:opacity-90 font-semibold text-base px-6"
+          >
+            <CameraIcon className="h-5 w-5 mr-2" /> Start Camera
+          </Button>
+        ) : (
+          <Button onClick={stop} size="lg" variant="destructive" className="font-semibold">
+            <Square className="h-4 w-4 mr-2" /> Stop
+          </Button>
+        )}
       </header>
-      <div className="grid lg:grid-cols-2 gap-6">
-        <div className="glass rounded-2xl p-4 soft-shadow">
-          <div className="relative rounded-xl overflow-hidden bg-black aspect-video">
+
+      <div className="grid lg:grid-cols-5 gap-6">
+        <div className="lg:col-span-3 glass rounded-2xl p-4 soft-shadow">
+          <div ref={wrapRef} className="relative rounded-xl overflow-hidden bg-black aspect-video">
             <video ref={videoRef} className="w-full h-full object-cover" playsInline muted />
-            {!running && <div className="absolute inset-0 grid place-items-center text-white/70 text-sm">Camera off</div>}
-            {busy && <div className="absolute top-2 right-2 bg-background/80 rounded-full p-1.5"><Loader2 className="h-4 w-4 animate-spin" /></div>}
-          </div>
-          <canvas ref={canvasRef} className="hidden" />
-          <div className="mt-3 flex gap-2">
-            {!running ? (
-              <Button onClick={start} className="bg-[var(--gradient-primary)] text-primary-foreground"><Play className="h-4 w-4 mr-1" /> Start</Button>
-            ) : (
-              <Button onClick={stop} variant="destructive"><Square className="h-4 w-4 mr-1" /> Stop</Button>
+            <canvas ref={overlayRef} className="absolute inset-0 w-full h-full pointer-events-none" />
+            {!running && (
+              <div className="absolute inset-0 grid place-items-center text-white/70 text-sm bg-black/40">
+                <div className="text-center">
+                  <CameraIcon className="h-10 w-10 mx-auto mb-2 opacity-60" />
+                  Camera off — press <span className="font-semibold">Start Camera</span>
+                </div>
+              </div>
+            )}
+            {busy && (
+              <div className="absolute top-3 right-3 bg-background/90 rounded-full px-3 py-1.5 flex items-center gap-2 text-xs font-medium shadow">
+                <Loader2 className="h-3.5 w-3.5 animate-spin" /> Scanning
+              </div>
+            )}
+            {running && items.length > 0 && (
+              <div className="absolute bottom-3 left-3 bg-background/90 rounded-full px-3 py-1 text-xs font-semibold shadow">
+                {items.length} item{items.length > 1 ? "s" : ""} detected
+              </div>
             )}
           </div>
+          <canvas ref={captureRef} className="hidden" />
         </div>
-        <div className="glass rounded-2xl p-6 soft-shadow">
-          <h2 className="font-display text-xl font-semibold mb-3">Detections</h2>
+
+        <div className="lg:col-span-2 glass rounded-2xl p-6 soft-shadow">
+          <h2 className="font-display text-xl font-semibold mb-3">Detections & disposal</h2>
           {items.length === 0 ? (
-            <p className="text-sm text-muted-foreground">Waiting for items…</p>
+            <p className="text-sm text-muted-foreground">Hold one or more items in frame…</p>
           ) : (
-            <div className="space-y-3">
+            <div className="space-y-3 max-h-[560px] overflow-y-auto pr-1">
               {items.map((it, i) => {
                 const d = DISPOSAL[it.class];
+                const dec = DECOMPOSITION[it.class];
+                const color = CLASS_COLORS[it.class];
                 return (
-                  <div key={i} className="rounded-xl border p-3 flex items-center gap-3">
-                    <div className="text-2xl">{d.emoji}</div>
-                    <div className="flex-1">
-                      <div className="font-medium">{it.label}</div>
-                      <div className="text-xs text-muted-foreground">{d.bin}</div>
+                  <div key={i} className="rounded-xl border p-3 bg-card" style={{ borderLeft: `4px solid ${color}` }}>
+                    <div className="flex items-center gap-3">
+                      <div className="text-2xl">{d.emoji}</div>
+                      <div className="flex-1 min-w-0">
+                        <div className="font-semibold truncate">{it.label}</div>
+                        <div className="text-xs text-muted-foreground">{d.bin}</div>
+                      </div>
+                      <div className="text-xs tabular-nums font-mono">{Math.round(it.confidence * 100)}%</div>
                     </div>
-                    <div className="text-xs tabular-nums">{Math.round(it.confidence * 100)}%</div>
+                    <div className="mt-2 text-xs space-y-1">
+                      <div><span className="font-semibold text-primary">Decompose:</span> {dec.time}</div>
+                      <div className="text-muted-foreground"><span className="font-medium text-foreground">How:</span> {dec.method}</div>
+                    </div>
                   </div>
                 );
               })}
