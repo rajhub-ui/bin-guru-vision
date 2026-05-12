@@ -2,9 +2,10 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { DISPOSAL, type WasteClass } from "@/lib/disposal";
-import { Trophy, Leaf, Recycle, TrendingUp, Trash2 } from "lucide-react";
+import { Trophy, Leaf, Recycle, TrendingUp, Trash2, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { exportDetectionsPDF } from "@/lib/report";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({ meta: [{ title: "Dashboard — EcoLens AI" }] }),
@@ -54,9 +55,26 @@ function DashboardPage() {
 
   return (
     <div className="max-w-6xl mx-auto">
-      <header className="mb-8">
-        <h1 className="text-4xl font-bold">Hi {name || "eco warrior"} 👋</h1>
-        <p className="text-muted-foreground mt-2">Here's the impact you've made.</p>
+      <header className="mb-8 flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <h1 className="text-4xl font-bold">Hi {name || "eco warrior"} 👋</h1>
+          <p className="text-muted-foreground mt-2">Here's the impact you've made.</p>
+        </div>
+        <Button
+          size="lg"
+          onClick={async () => {
+            try {
+              await exportDetectionsPDF();
+              toast.success("Report downloaded.");
+            } catch {
+              toast.error("Could not export report.");
+            }
+          }}
+          style={{ background: "var(--gradient-primary)" }}
+          className="text-primary-foreground eco-shadow hover:opacity-90 font-semibold"
+        >
+          <Download className="h-4 w-4 mr-2" /> Export PDF report
+        </Button>
       </header>
 
       <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
