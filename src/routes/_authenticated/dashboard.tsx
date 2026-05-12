@@ -2,7 +2,9 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { DISPOSAL, type WasteClass } from "@/lib/disposal";
-import { Trophy, Leaf, Recycle, TrendingUp } from "lucide-react";
+import { Trophy, Leaf, Recycle, TrendingUp, Trash2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({ meta: [{ title: "Dashboard — EcoLens AI" }] }),
@@ -71,7 +73,24 @@ function DashboardPage() {
       </div>
 
       <div className="glass rounded-2xl p-6 soft-shadow">
-        <h2 className="font-display text-xl font-semibold mb-4">Recent detections</h2>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="font-display text-xl font-semibold">Recent detections</h2>
+          {detections.length > 0 && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={async () => {
+                const { data: { user } } = await supabase.auth.getUser();
+                if (!user) return;
+                await supabase.from("detections").delete().eq("user_id", user.id);
+                setDetections([]);
+                toast.success("All sorted waste cleared.");
+              }}
+            >
+              <Trash2 className="h-4 w-4 mr-1" /> Clear all
+            </Button>
+          )}
+        </div>
         {detections.length === 0 ? (
           <p className="text-sm text-muted-foreground">No scans yet — head to <span className="text-primary">Scan</span> to get started.</p>
         ) : (

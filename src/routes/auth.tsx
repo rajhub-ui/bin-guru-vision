@@ -7,6 +7,9 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Leaf, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
+
+const isValidEmail = (e: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
 
 export const Route = createFileRoute("/auth")({
   head: () => ({
@@ -101,9 +104,22 @@ function AuthPage() {
                   <Label htmlFor="pw-in">Password</Label>
                   <Input id="pw-in" type="password" required value={password} onChange={(e) => setPassword(e.target.value)} />
                 </div>
-                <Button type="submit" disabled={loading} style={{ background: "var(--gradient-primary)" }} className="w-full text-primary-foreground hover:opacity-90">
-                  {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Sign in
-                </Button>
+                {(() => {
+                  const ok = isValidEmail(email) && password.length >= 6;
+                  return (
+                    <Button
+                      type="submit"
+                      disabled={loading || !ok}
+                      style={ok ? { background: "var(--gradient-primary)" } : undefined}
+                      className={cn(
+                        "w-full transition-all",
+                        ok ? "text-primary-foreground eco-shadow hover:opacity-90" : "bg-muted text-muted-foreground border border-border cursor-not-allowed",
+                      )}
+                    >
+                      {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Sign in
+                    </Button>
+                  );
+                })()}
               </form>
             </TabsContent>
 
@@ -122,9 +138,22 @@ function AuthPage() {
                   <Label htmlFor="pw-up">Password</Label>
                   <Input id="pw-up" type="password" required minLength={6} value={password} onChange={(e) => setPassword(e.target.value)} />
                 </div>
-                <Button type="submit" disabled={loading} style={{ background: "var(--gradient-primary)" }} className="w-full text-primary-foreground hover:opacity-90">
-                  {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Create account
-                </Button>
+                {(() => {
+                  const ok = isValidEmail(email) && password.length >= 6;
+                  return (
+                    <Button
+                      type="submit"
+                      disabled={loading || !ok}
+                      style={ok ? { background: "var(--gradient-primary)" } : undefined}
+                      className={cn(
+                        "w-full transition-all",
+                        ok ? "text-primary-foreground eco-shadow hover:opacity-90" : "bg-muted text-muted-foreground border border-border cursor-not-allowed",
+                      )}
+                    >
+                      {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Create account
+                    </Button>
+                  );
+                })()}
               </form>
             </TabsContent>
           </Tabs>

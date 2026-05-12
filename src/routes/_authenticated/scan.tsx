@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { toast } from "sonner";
 import { classifyFile, logDetection, type DetectedItem } from "@/lib/scan";
-import { DISPOSAL } from "@/lib/disposal";
+import { DISPOSAL, DECOMPOSITION } from "@/lib/disposal";
 
 export const Route = createFileRoute("/_authenticated/scan")({
   head: () => ({ meta: [{ title: "Scan — EcoLens AI" }] }),
@@ -25,10 +25,10 @@ function ScanPage() {
     setLoading(true);
     const res = await classifyFile(file);
     setLoading(false);
-    if (res.error) return toast.error(res.error);
+    // Errors silenced — show empty results gracefully.
+    if (res.error) { setItems([]); return; }
     setItems(res.items);
     setSummary(res.summary);
-    if (res.items.length === 0) toast.info("No waste detected in this image.");
     for (const it of res.items) {
       const d = DISPOSAL[it.class];
       logDetection({ source: "image", predicted_class: it.class, confidence: it.confidence, carbon_grams: d.carbonGramsSaved });
@@ -39,9 +39,19 @@ function ScanPage() {
 
   return (
     <div className="max-w-5xl mx-auto">
-      <header className="mb-8">
-        <h1 className="text-4xl font-bold">Image scan</h1>
-        <p className="text-muted-foreground mt-2">Upload a photo and EcoLens will identify the waste and tell you how to dispose of it.</p>
+      <header className="mb-8 flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <h1 className="text-4xl font-bold">Image scan</h1>
+          <p className="text-muted-foreground mt-2">Upload a photo and EcoLens will identify the waste and tell you how to dispose of it.</p>
+        </div>
+        <Button
+          size="lg"
+          onClick={() => inputRef.current?.click()}
+          style={{ background: "var(--gradient-primary)" }}
+          className="text-primary-foreground eco-shadow hover:opacity-90 font-semibold text-base px-6"
+        >
+          <Upload className="h-5 w-5 mr-2" /> Start Scanning
+        </Button>
       </header>
 
       <div className="grid lg:grid-cols-2 gap-6">
@@ -113,6 +123,11 @@ function ScanPage() {
                               <ul className="mt-1 list-disc list-inside text-muted-foreground space-y-0.5">
                                 {d.instructions.map((step) => <li key={step}>{step}</li>)}
                               </ul>
+                              <div className="mt-3 rounded-lg p-3 border bg-accent/40">
+                                <div className="text-xs font-semibold uppercase tracking-wide text-primary">Decomposition</div>
+                                <div className="text-xs mt-1"><span className="font-medium">Time:</span> {DECOMPOSITION[it.class].time}</div>
+                                <div className="text-xs mt-1"><span className="font-medium">Method:</span> {DECOMPOSITION[it.class].method}</div>
+                              </div>
                               <div className="mt-2 text-xs text-primary">≈ {d.carbonGramsSaved}g CO₂e saved if recycled correctly</div>
                             </div>
                           </div>

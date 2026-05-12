@@ -43,19 +43,22 @@ function Landing() {
               waste <span className="eco-gradient-text">less.</span>
             </h1>
             <p className="mt-6 text-lg text-muted-foreground max-w-xl">
-              EcoLens AI identifies plastic, paper, metal, glass, organic and e-waste from a photo, your live camera, an uploaded video, a PDF, or just your voice — and tells you exactly what to do with it.
+              EcoLens AI identifies plastic, paper, metal, glass, organic, e-waste and cloth from a photo, your live camera, an uploaded video, a PDF, or just your voice — and tells you exactly what to do with it.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
-              <Button asChild size="lg" className="bg-[var(--gradient-primary)] text-primary-foreground hover:opacity-90 eco-shadow">
-                <Link to="/auth">Start scanning <ArrowRight className="ml-1 h-4 w-4" /></Link>
+              <Button asChild size="lg" style={{ background: "var(--gradient-primary)" }} className="text-primary-foreground eco-shadow hover:opacity-90 font-semibold">
+                <Link to="/auth">
+                  <ArrowRight className="mr-2 h-5 w-5" />
+                  Get started — Start scanning
+                </Link>
               </Button>
-              <Button asChild variant="outline" size="lg">
+              <Button asChild variant="outline" size="lg" className="border-2 border-primary text-primary hover:bg-primary/10 font-semibold">
                 <Link to="/scan">Try the scanner</Link>
               </Button>
             </div>
             <div className="mt-10 grid grid-cols-3 gap-6 max-w-md">
               {[
-                { v: "6", l: "waste classes" },
+                { v: "7", l: "waste classes" },
                 { v: "5", l: "input modes" },
                 { v: "100%", l: "private" },
               ].map((s) => (
@@ -100,7 +103,7 @@ function Landing() {
             const Icon = f.icon;
             return (
               <div key={f.title} className="glass rounded-2xl p-6 soft-shadow group hover:eco-shadow transition-all">
-                <div className="grid h-11 w-11 place-items-center rounded-xl bg-[var(--gradient-primary)] text-primary-foreground mb-4 group-hover:scale-110 transition-transform">
+                <div className="grid h-11 w-11 place-items-center rounded-xl text-primary-foreground mb-4 group-hover:scale-110 transition-transform eco-shadow" style={{ background: "var(--gradient-primary)" }}>
                   <Icon className="h-5 w-5" />
                 </div>
                 <h3 className="font-display text-lg font-semibold">{f.title}</h3>
@@ -120,7 +123,7 @@ function Landing() {
           <p className="mt-3 text-muted-foreground max-w-lg mx-auto">
             Track your eco score, unlock badges, and watch your carbon savings add up — one scan at a time.
           </p>
-          <Button asChild size="lg" className="mt-6 bg-[var(--gradient-primary)] text-primary-foreground hover:opacity-90">
+          <Button asChild size="lg" style={{ background: "var(--gradient-primary)" }} className="mt-6 text-primary-foreground eco-shadow hover:opacity-90 font-semibold">
             <Link to="/auth">Create your account <Leaf className="ml-1 h-4 w-4" /></Link>
           </Button>
         </div>

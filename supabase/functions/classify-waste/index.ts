@@ -6,15 +6,16 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const SYSTEM = `You classify waste items into exactly one of these categories: plastic, paper, metal, glass, organic, ewaste.
+const SYSTEM = `You are a multi-object waste detector. Identify EVERY distinct waste item visible (return multiple items when present) and classify each into exactly one of: plastic, paper, metal, glass, organic, ewaste, cloth.
 - plastic: bottles, packaging, plastic bags, polystyrene
 - paper: cardboard, newspaper, magazines, office paper
 - metal: aluminium cans, tin cans, foil, scrap metal
 - glass: bottles, jars, broken glass containers
 - organic: food scraps, plant matter, compostable
 - ewaste: phones, batteries, cables, circuit boards, light bulbs
-Return ONLY valid JSON: {"items":[{"label":"<name of object>","class":"plastic|paper|metal|glass|organic|ewaste","confidence":0.0-1.0,"box":[x,y,w,h] or null}],"summary":"one short sentence"}.
-box is normalized 0..1 image coords. If you can't see waste, return items: [].`;
+- cloth: clothing, fabric, towels, textiles, shoes
+Return ONLY valid JSON: {"items":[{"label":"<short object name>","class":"plastic|paper|metal|glass|organic|ewaste|cloth","confidence":0.0-1.0,"box":[x,y,w,h]}],"summary":"one short sentence"}.
+box MUST be provided as normalized 0..1 image coords [x,y,width,height] for each item so the UI can draw an AR overlay. If no waste visible, return items: [].`;
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });

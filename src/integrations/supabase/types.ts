@@ -195,6 +195,7 @@ export type Database = {
         | "glass"
         | "organic"
         | "ewaste"
+        | "cloth"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -324,7 +325,15 @@ export const Constants = {
     Enums: {
       app_role: ["admin", "user"],
       detection_source: ["image", "live", "video", "pdf"],
-      waste_class: ["plastic", "paper", "metal", "glass", "organic", "ewaste"],
+      waste_class: [
+        "plastic",
+        "paper",
+        "metal",
+        "glass",
+        "organic",
+        "ewaste",
+        "cloth",
+      ],
     },
   },
 } as const
