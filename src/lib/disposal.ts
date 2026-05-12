@@ -92,8 +92,31 @@ export const DISPOSAL: Record<WasteClass, DisposalInfo> = {
     recyclable: true,
     carbonGramsSaved: 1500,
   },
+  cloth: {
+    label: "Cloth",
+    emoji: "👕",
+    color: "rose",
+    bin: "Textile recycling / donation bin",
+    instructions: [
+      "Donate wearable clothing to charity shops.",
+      "Drop torn or stained textiles at a fabric-recycling point.",
+      "Avoid putting wet or mouldy fabric in donation bins.",
+    ],
+    recyclable: true,
+    carbonGramsSaved: 250,
+  },
+};
+
+export const DECOMPOSITION: Record<WasteClass, { time: string; method: string }> = {
+  plastic: { time: "450+ years", method: "Mechanical recycling — shred, wash, melt into pellets, remould." },
+  paper:   { time: "2–6 weeks",   method: "Pulping + de-inking — re-formed into new paper sheets." },
+  metal:   { time: "50–500 years",method: "Melt-down furnace — re-cast into ingots, infinitely recyclable." },
+  glass:   { time: "1M+ years",   method: "Crushed into cullet, melted at 1500°C, blown into new bottles." },
+  organic: { time: "2–6 weeks",   method: "Aerobic composting or anaerobic digestion → soil + biogas." },
+  ewaste:  { time: "Never (toxic)", method: "Certified disassembly — recover gold, copper, rare earths; safe-dispose batteries." },
+  cloth:   { time: "5 months – 40 years", method: "Sort by fibre, shred natural fibres for insulation, recycle synthetics into yarn." },
 };
 
 export const WASTE_CLASSES: WasteClass[] = [
-  "plastic", "paper", "metal", "glass", "organic", "ewaste",
+  "plastic", "paper", "metal", "glass", "organic", "ewaste", "cloth",
 ];
