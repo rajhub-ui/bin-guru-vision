@@ -105,6 +105,7 @@ export async function logDetection(opts: {
   confidence: number;
   carbon_grams: number;
   image_path?: string;
+  hazard_level?: string;
 }) {
   const {
     data: { user },
@@ -117,6 +118,7 @@ export async function logDetection(opts: {
     confidence: opts.confidence,
     carbon_grams: opts.carbon_grams,
     image_path: opts.image_path ?? null,
+    hazard_level: opts.hazard_level ?? null,
   });
   const inc = Math.max(1, Math.round(opts.confidence * 10));
   const { data: profile } = await supabase

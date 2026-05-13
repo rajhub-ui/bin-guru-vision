@@ -70,6 +70,7 @@ export type Database = {
           carbon_grams: number
           confidence: number
           created_at: string
+          hazard_level: string | null
           id: string
           image_path: string | null
           predicted_class: Database["public"]["Enums"]["waste_class"]
@@ -80,6 +81,7 @@ export type Database = {
           carbon_grams?: number
           confidence: number
           created_at?: string
+          hazard_level?: string | null
           id?: string
           image_path?: string | null
           predicted_class: Database["public"]["Enums"]["waste_class"]
@@ -90,6 +92,7 @@ export type Database = {
           carbon_grams?: number
           confidence?: number
           created_at?: string
+          hazard_level?: string | null
           id?: string
           image_path?: string | null
           predicted_class?: Database["public"]["Enums"]["waste_class"]

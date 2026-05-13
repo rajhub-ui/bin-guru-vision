@@ -1,82 +1,55 @@
-# EcoLens AI — Build Plan
+## EcoLens AI — Phase 1: Smart City Core
 
-A waste-classification PWA built entirely on this Lovable stack (TanStack Start + React on Cloudflare Workers, Lovable Cloud for DB/auth/storage, Lovable AI Gateway for the chatbot). All vision runs **in the browser** so image / live camera / video / PDF detection works offline.
+Honest constraints first:
+- This stack is **TanStack Start (web) + Lovable Cloud**. We can't ship native mobile (RN/Flutter), Python/FastAPI, MongoDB, ESP32 firmware, or train YOLOv8 here — those need separate repos/hardware.
+- Existing AI detection (Lovable AI Gateway / Gemini vision) **stays as-is** and we extend around it. No model swap.
+- Maps: VITE_ secrets must live in `.env` (the secret tool rejected `VITE_GOOGLE_MAPS_API_KEY`). To unblock immediately I'll use **Leaflet + OpenStreetMap + Nominatim** (free, no key, looks great with custom tiles). We can swap to Google Maps later by replacing one component if you provide the key directly.
 
-## Scope vs. original spec
+## What I'll build now
 
-| Requested | Delivered as | Why |
-|---|---|---|
-| FastAPI backend | Lovable Cloud (Postgres + Edge Functions) + TanStack server functions | No Python runtime in Workers |
-| TensorFlow/Keras + YOLO training | Pre-trained MobileNet (TF.js) for classification + YOLOv8n ONNX (onnxruntime-web) for detection, shipped as static assets | Runs offline in the browser; no GPU server needed |
-| Speech-to-text / TTS | Browser `SpeechRecognition` + `speechSynthesis` Web APIs | Free, offline-capable, zero deps |
-| PDF parsing + OCR | `pdfjs-dist` (extract images) + `tesseract.js` (OCR, optional) | Pure JS, runs in browser |
-| Chatbot LLM | Lovable AI Gateway (Gemini 3 Flash) via edge function, streaming | Online-only, as you confirmed |
-| Offline mode | Vite PWA plugin + service worker caches app shell + model weights | True offline for vision |
-| Carbon tracking + gamification | Postgres tables + RLS + computed views | |
+### 1. Visual overhaul — "Eco Daylight" smart-city theme
+- New tokens in `src/styles.css`: warm cream bg `#f5f0e8`, sage `#dce5d4`, civic teal `#2d8a9e`, deep forest `#1b4332`, gradients + soft shadows.
+- Display font pair: Sora (headings) + Inter (body).
+- Glassmorphism cards, animated stat counters, subtle grid background.
+- Refreshed `AppHeader`, `SiteFooter`, landing `index.tsx`, dashboard cards.
 
-## Pages / routes
+### 2. Disposal navigation (`/disposal`)
+- Leaflet map centered on user geolocation.
+- Nominatim search for nearby `recycling`, `waste_basket`, `waste_disposal`, `recycling_centre` POIs.
+- Filter chips by waste type (plastic / e-waste / hazardous / glass / metal / organic / cloth).
+- Selected facility → distance, ETA, "Open in Google Maps" deep link, route polyline via OSRM.
+- "Find nearest disposal" CTA appears on every detection result card.
 
+### 3. Hazardous waste alert system
+- Extend the edge-function classifier to flag `ewaste`, plus new pseudo-classes inferred from labels: `battery`, `medical`, `chemical`, `sharps` (regex on returned label text — no model change).
+- New `HazardAlert` component: red glass banner, audio beep (Web Audio API, no asset), PPE icons, step-by-step disposal, "Find hazardous center" → `/disposal?type=hazardous`.
+- Logged to `detections` with a `hazard_level` flag (migration adds nullable column).
+
+### 4. Admin analytics dashboard (`/admin`)
+- Gated by `user_roles.role = 'admin'` (table already exists).
+- Recharts: detections per day (area), waste-class breakdown (pie), CO₂e saved (bar), top hazard counts.
+- Heatmap-lite: detections grouped by hour-of-day (recharts heatmap grid).
+- "Promote me to admin" dev button (only visible if no admin exists yet) — inserts row via server function for first-run convenience.
+
+### 5. New nav structure
 ```
-/                       Landing + value prop + CTA
-/scan                   Image upload → classify (drag-drop, webp/png/jpg)
-/live                   Live webcam YOLO detection (bounding boxes overlay)
-/video                  Upload video → frame-sampled detection + timeline
-/pdf                    PDF upload → image extraction → batch classify
-/chat                   Voice + text chatbot (mic, TTS, streaming)
-/dashboard              History, eco score, badges, carbon saved
-/auth                   Login / signup (email)
+/                       landing (smart-city hero)
+/auth                   (existing)
+/_authenticated/
+  dashboard             (existing, restyled)
+  scan, live, video, pdf, chat  (existing, restyled cards)
+  disposal              NEW — map + facilities
+  admin                 NEW — analytics, role-gated
 ```
 
-## Data model (Lovable Cloud / Postgres)
+## Deferred to Phase 2 (roadmap, not built now)
+QR household tracking · IoT smart-bin dashboard · voice assistant · offline PWA · predictive pickup routing · multi-language · React Native mobile · real ESP32/MQTT · model retraining.
 
-- `profiles` (id, display_name, eco_score, created_at)
-- `user_roles` (user_id, role) — separate table per security guidelines
-- `detections` (id, user_id, source: image|live|video|pdf, predicted_class, confidence, image_url, carbon_grams, created_at)
-- `chat_messages` (id, user_id, role, content, created_at)
-- `badges` (id, slug, name, description, icon)
-- `user_badges` (user_id, badge_id, earned_at)
-- Storage bucket `scans` (private, RLS by user_id) for uploaded images/thumbs
-- RLS: users see only their own rows; `has_role()` security-definer function
+## Tech notes
+- Add `leaflet`, `react-leaflet`, `recharts` (already present? will check), `@types/leaflet`.
+- New server function `src/lib/admin.functions.ts` for role check + analytics aggregation (RLS-safe).
+- Migration: `ALTER TABLE detections ADD COLUMN hazard_level text NULL;`
+- All new pages get `head()` SEO metadata.
+- No business-logic change to existing scan/classify pipeline beyond hazard label flagging.
 
-## AI / inference layout
-
-- `public/models/mobilenet-waste/` — classification weights (TF.js graph model, 6 classes: plastic / paper / metal / glass / organic / e-waste). Loaded once, cached by SW.
-- `public/models/yolov8n-waste.onnx` — detection weights for `/live` and `/video` via `onnxruntime-web` (WASM backend, threaded).
-- `src/lib/vision/classifier.ts` — `classifyImage(file|imageData) → {label, confidence}`
-- `src/lib/vision/detector.ts` — `detectFrame(videoEl) → boxes[]`, throttled to ~10 FPS
-- `src/lib/disposal.ts` — static rules table mapping class → disposal instructions + carbon estimate
-
-> Note on weights: I'll wire the pipeline against placeholder/public pretrained weights (e.g. a generic MobileNet fine-tuned on TrashNet that I can fetch). Production accuracy will require you to train on your own dataset and drop the resulting `.json`/`.onnx` into `public/models/`.
-
-## Chatbot
-
-- Edge function `chat` calls Lovable AI Gateway (`google/gemini-3-flash-preview`), streaming SSE.
-- System prompt scoped to waste/recycling/sustainability, with current detection context injected when available.
-- Frontend: Web Speech API for mic input → text → stream → `speechSynthesis` for voice reply.
-- Offline fallback: small rule-based responder over the disposal-rules table.
-
-## PWA / offline
-
-- `vite-plugin-pwa` with Workbox: precache app shell + `/models/**`.
-- `/scan`, `/live`, `/video`, `/pdf` fully functional offline. `/chat` shows offline banner + falls back to rule-based answers.
-
-## Build order
-
-1. Enable Lovable Cloud, create schema + RLS + storage bucket.
-2. Design system pass in `styles.css` (eco palette, typography) + landing page.
-3. Auth (email) + protected `_authenticated` layout for dashboard/history.
-4. Image classifier pipeline + `/scan` page + disposal recommendations + write detection rows.
-5. Live webcam detector (`/live`) with bounding-box canvas overlay + FPS counter.
-6. Video upload (`/video`) — sample N frames, aggregate, timeline chart.
-7. PDF route (`/pdf`) — pdfjs image extraction → reuse classifier.
-8. Chatbot edge function + `/chat` UI with mic + TTS + streaming.
-9. Dashboard: history, carbon saved, eco score, badges (gamification triggers in DB function).
-10. PWA install + offline caching of models.
-11. QA pass on each route, responsive check, empty/error states.
-
-## Notes / caveats
-
-- Model accuracy depends on the weights you ship; the architecture is correct but the included weights will be a generic baseline.
-- Real-time YOLO in WASM gets ~5–15 FPS on a typical laptop; mobile will be lower. Acceptable for waste sorting.
-- Microphone, camera, and notifications require HTTPS — preview & published URLs both qualify.
-- Will be built incrementally; I'd suggest we ship steps 1–4 first, then iterate.
+Approve and I'll execute.

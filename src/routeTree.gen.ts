@@ -16,8 +16,10 @@ import { Route as AuthenticatedVideoRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedScanRouteImport } from './routes/_authenticated/scan'
 import { Route as AuthenticatedPdfRouteImport } from './routes/_authenticated/pdf'
 import { Route as AuthenticatedLiveRouteImport } from './routes/_authenticated/live'
+import { Route as AuthenticatedDisposalRouteImport } from './routes/_authenticated/disposal'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedChatRouteImport } from './routes/_authenticated/chat'
+import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
@@ -53,6 +55,11 @@ const AuthenticatedLiveRoute = AuthenticatedLiveRouteImport.update({
   path: '/live',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedDisposalRoute = AuthenticatedDisposalRouteImport.update({
+  id: '/disposal',
+  path: '/disposal',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
@@ -63,12 +70,19 @@ const AuthenticatedChatRoute = AuthenticatedChatRouteImport.update({
   path: '/chat',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/admin': typeof AuthenticatedAdminRoute
   '/chat': typeof AuthenticatedChatRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/disposal': typeof AuthenticatedDisposalRoute
   '/live': typeof AuthenticatedLiveRoute
   '/pdf': typeof AuthenticatedPdfRoute
   '/scan': typeof AuthenticatedScanRoute
@@ -77,8 +91,10 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/admin': typeof AuthenticatedAdminRoute
   '/chat': typeof AuthenticatedChatRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/disposal': typeof AuthenticatedDisposalRoute
   '/live': typeof AuthenticatedLiveRoute
   '/pdf': typeof AuthenticatedPdfRoute
   '/scan': typeof AuthenticatedScanRoute
@@ -89,8 +105,10 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/auth': typeof AuthRoute
+  '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/_authenticated/chat': typeof AuthenticatedChatRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/disposal': typeof AuthenticatedDisposalRoute
   '/_authenticated/live': typeof AuthenticatedLiveRoute
   '/_authenticated/pdf': typeof AuthenticatedPdfRoute
   '/_authenticated/scan': typeof AuthenticatedScanRoute
@@ -101,8 +119,10 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/auth'
+    | '/admin'
     | '/chat'
     | '/dashboard'
+    | '/disposal'
     | '/live'
     | '/pdf'
     | '/scan'
@@ -111,8 +131,10 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/auth'
+    | '/admin'
     | '/chat'
     | '/dashboard'
+    | '/disposal'
     | '/live'
     | '/pdf'
     | '/scan'
@@ -122,8 +144,10 @@ export interface FileRouteTypes {
     | '/'
     | '/_authenticated'
     | '/auth'
+    | '/_authenticated/admin'
     | '/_authenticated/chat'
     | '/_authenticated/dashboard'
+    | '/_authenticated/disposal'
     | '/_authenticated/live'
     | '/_authenticated/pdf'
     | '/_authenticated/scan'
@@ -187,6 +211,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedLiveRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/disposal': {
+      id: '/_authenticated/disposal'
+      path: '/disposal'
+      fullPath: '/disposal'
+      preLoaderRoute: typeof AuthenticatedDisposalRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/dashboard': {
       id: '/_authenticated/dashboard'
       path: '/dashboard'
@@ -201,12 +232,21 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedChatRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/admin': {
+      id: '/_authenticated/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AuthenticatedAdminRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
   }
 }
 
 interface AuthenticatedRouteChildren {
+  AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
   AuthenticatedChatRoute: typeof AuthenticatedChatRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedDisposalRoute: typeof AuthenticatedDisposalRoute
   AuthenticatedLiveRoute: typeof AuthenticatedLiveRoute
   AuthenticatedPdfRoute: typeof AuthenticatedPdfRoute
   AuthenticatedScanRoute: typeof AuthenticatedScanRoute
@@ -214,8 +254,10 @@ interface AuthenticatedRouteChildren {
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
+  AuthenticatedAdminRoute: AuthenticatedAdminRoute,
   AuthenticatedChatRoute: AuthenticatedChatRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedDisposalRoute: AuthenticatedDisposalRoute,
   AuthenticatedLiveRoute: AuthenticatedLiveRoute,
   AuthenticatedPdfRoute: AuthenticatedPdfRoute,
   AuthenticatedScanRoute: AuthenticatedScanRoute,
@@ -234,13 +276,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

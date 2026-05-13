@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { classifyFile, logDetection, type DetectedItem } from "@/lib/scan";
 import { DISPOSAL, DECOMPOSITION } from "@/lib/disposal";
+import { detectHazard, type HazardInfo } from "@/lib/hazard";
+import { HazardAlert } from "@/components/HazardAlert";
 
 export const Route = createFileRoute("/_authenticated/scan")({
   head: () => ({ meta: [{ title: "Scan — EcoLens AI" }] }),
@@ -16,22 +18,25 @@ function ScanPage() {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [items, setItems] = useState<DetectedItem[] | null>(null);
   const [summary, setSummary] = useState("");
+  const [hazard, setHazard] = useState<HazardInfo | null>(null);
   const [loading, setLoading] = useState(false);
 
   const onFile = async (file: File) => {
     setItems(null);
     setSummary("");
+    setHazard(null);
     setPreviewUrl(URL.createObjectURL(file));
     setLoading(true);
     try {
       const res = await classifyFile(file);
-      // Errors silenced — show empty results gracefully.
       if (res.error || res.fallback) {
         setItems([]);
         return;
       }
       setItems(res.items);
       setSummary(res.summary);
+      const h = detectHazard(res.items);
+      setHazard(h);
       for (const it of res.items) {
         const d = DISPOSAL[it.class];
         logDetection({
@@ -39,6 +44,7 @@ function ScanPage() {
           predicted_class: it.class,
           confidence: it.confidence,
           carbon_grams: d.carbonGramsSaved,
+          hazard_level: h?.level,
         });
       }
     } finally {
@@ -49,6 +55,7 @@ function ScanPage() {
   const reset = () => {
     setItems(null);
     setSummary("");
+    setHazard(null);
     setPreviewUrl(null);
   };
 
@@ -132,6 +139,7 @@ function ScanPage() {
                 </Button>
               </div>
               {summary && <p className="text-sm text-muted-foreground mb-4">{summary}</p>}
+              {hazard && <div className="mb-4"><HazardAlert hazard={hazard} /></div>}
               {items.length === 0 ? (
                 <p className="text-sm text-muted-foreground">No waste items detected.</p>
               ) : (
