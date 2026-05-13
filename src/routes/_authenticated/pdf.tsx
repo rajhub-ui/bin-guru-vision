@@ -51,7 +51,7 @@ function PdfPage() {
     setFileName(file.name);
     try {
       // Lazy-load pdfjs and configure worker (Vite-friendly)
-      const pdfjs = (await import("pdfjs-dist")) as PdfJsModule;
+      const pdfjs = (await import("pdfjs-dist")) as unknown as PdfJsModule;
       const workerUrl = (await import("pdfjs-dist/build/pdf.worker.min.mjs?url")).default;
       pdfjs.GlobalWorkerOptions.workerSrc = workerUrl;
 
