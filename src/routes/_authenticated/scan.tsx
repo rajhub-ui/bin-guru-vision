@@ -3,7 +3,6 @@ import { useRef, useState } from "react";
 import { Upload, Loader2, Camera as CameraIcon, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { toast } from "sonner";
 import { classifyFile, logDetection, type DetectedItem } from "@/lib/scan";
 import { DISPOSAL, DECOMPOSITION } from "@/lib/disposal";
 
@@ -23,15 +22,18 @@ function ScanPage() {
     setItems(null); setSummary("");
     setPreviewUrl(URL.createObjectURL(file));
     setLoading(true);
-    const res = await classifyFile(file);
-    setLoading(false);
-    // Errors silenced — show empty results gracefully.
-    if (res.error) { setItems([]); return; }
-    setItems(res.items);
-    setSummary(res.summary);
-    for (const it of res.items) {
-      const d = DISPOSAL[it.class];
-      logDetection({ source: "image", predicted_class: it.class, confidence: it.confidence, carbon_grams: d.carbonGramsSaved });
+    try {
+      const res = await classifyFile(file);
+      // Errors silenced — show empty results gracefully.
+      if (res.error || res.fallback) { setItems([]); return; }
+      setItems(res.items);
+      setSummary(res.summary);
+      for (const it of res.items) {
+        const d = DISPOSAL[it.class];
+        logDetection({ source: "image", predicted_class: it.class, confidence: it.confidence, carbon_grams: d.carbonGramsSaved });
+      }
+    } finally {
+      setLoading(false);
     }
   };
 
