@@ -49,7 +49,7 @@ function PdfPage() {
         await page.render({ canvasContext: ctx, viewport, canvas }).promise;
 
         const res = await classifyCanvas(canvas);
-        const items = res.error ? [] : res.items;
+        const items = res.error || res.fallback ? [] : res.items;
         out.push({
           pageNumber: p,
           thumbnail: canvas.toDataURL("image/jpeg", 0.7),
