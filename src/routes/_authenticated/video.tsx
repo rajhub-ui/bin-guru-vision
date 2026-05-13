@@ -3,7 +3,6 @@ import { useRef, useState } from "react";
 import { Upload, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { toast } from "sonner";
 import { classifyCanvas, logDetection, type DetectedItem } from "@/lib/scan";
 import { DISPOSAL, type WasteClass } from "@/lib/disposal";
 
@@ -38,7 +37,7 @@ function VideoPage() {
       await new Promise((r) => (video.onseeked = () => r(null)));
       ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
       const res = await classifyCanvas(canvas);
-      if (res.error) { toast.error(res.error); break; }
+      if (res.error || res.fallback) continue;
       for (const it of res.items) {
         allItems.push(it);
         localCounts[it.class] = (localCounts[it.class] ?? 0) + 1;
