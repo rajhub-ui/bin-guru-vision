@@ -111,12 +111,15 @@ function LivePage() {
       setBusy(true);
       c.width = 640; c.height = (640 * v.videoHeight) / v.videoWidth;
       c.getContext("2d")!.drawImage(v, 0, 0, c.width, c.height);
-      const res = await classifyCanvas(c);
-      setBusy(false);
-      if (res.error) return; // silent
-      setItems(res.items);
-      for (const it of res.items) {
-        logDetection({ source: "live", predicted_class: it.class, confidence: it.confidence, carbon_grams: DISPOSAL[it.class].carbonGramsSaved });
+      try {
+        const res = await classifyCanvas(c);
+        if (res.error || res.fallback) return; // silent fallback on busy AI
+        setItems(res.items);
+        for (const it of res.items) {
+          logDetection({ source: "live", predicted_class: it.class, confidence: it.confidence, carbon_grams: DISPOSAL[it.class].carbonGramsSaved });
+        }
+      } finally {
+        setBusy(false);
       }
     }, 2500);
     return () => { if (intervalRef.current) window.clearInterval(intervalRef.current); };
