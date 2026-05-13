@@ -19,10 +19,15 @@ function VideoPage() {
   const [counts, setCounts] = useState<Record<string, number>>({});
 
   const onFile = async (file: File) => {
-    setItems([]); setCounts({}); setProgress(0); setRunning(true);
+    setItems([]);
+    setCounts({});
+    setProgress(0);
+    setRunning(true);
     const url = URL.createObjectURL(file);
     const video = document.createElement("video");
-    video.src = url; video.muted = true; video.playsInline = true;
+    video.src = url;
+    video.muted = true;
+    video.playsInline = true;
     await new Promise((r) => (video.onloadedmetadata = () => r(null)));
     const canvas = document.createElement("canvas");
     canvas.width = 480;
@@ -41,11 +46,18 @@ function VideoPage() {
       for (const it of res.items) {
         allItems.push(it);
         localCounts[it.class] = (localCounts[it.class] ?? 0) + 1;
-        logDetection({ source: "video", predicted_class: it.class, confidence: it.confidence, carbon_grams: DISPOSAL[it.class].carbonGramsSaved });
+        logDetection({
+          source: "video",
+          predicted_class: it.class,
+          confidence: it.confidence,
+          carbon_grams: DISPOSAL[it.class].carbonGramsSaved,
+        });
       }
       setProgress(Math.round(((i + 1) / samples) * 100));
     }
-    setItems(allItems); setCounts(localCounts); setRunning(false);
+    setItems(allItems);
+    setCounts(localCounts);
+    setRunning(false);
     URL.revokeObjectURL(url);
   };
 
@@ -55,11 +67,21 @@ function VideoPage() {
     <div className="max-w-4xl mx-auto">
       <header className="mb-6">
         <h1 className="text-4xl font-bold">Video analysis</h1>
-        <p className="text-muted-foreground mt-2">Upload a clip — we'll sample frames and classify the waste shown.</p>
+        <p className="text-muted-foreground mt-2">
+          Upload a clip — we'll sample frames and classify the waste shown.
+        </p>
       </header>
-      <div onClick={() => inputRef.current?.click()}
-        className="glass rounded-2xl p-10 text-center cursor-pointer border-2 border-dashed hover:eco-shadow">
-        <input ref={inputRef} type="file" accept="video/*" hidden onChange={(e) => e.target.files?.[0] && onFile(e.target.files[0])} />
+      <div
+        onClick={() => inputRef.current?.click()}
+        className="glass rounded-2xl p-10 text-center cursor-pointer border-2 border-dashed hover:eco-shadow"
+      >
+        <input
+          ref={inputRef}
+          type="file"
+          accept="video/*"
+          hidden
+          onChange={(e) => e.target.files?.[0] && onFile(e.target.files[0])}
+        />
         <div className="grid h-16 w-16 mx-auto place-items-center rounded-2xl bg-[var(--gradient-primary)] text-primary-foreground mb-4">
           <Upload className="h-7 w-7" />
         </div>
@@ -69,7 +91,9 @@ function VideoPage() {
 
       {running && (
         <div className="mt-6 glass rounded-2xl p-5">
-          <div className="flex items-center gap-2 mb-2"><Loader2 className="h-4 w-4 animate-spin" /> Sampling frames…</div>
+          <div className="flex items-center gap-2 mb-2">
+            <Loader2 className="h-4 w-4 animate-spin" /> Sampling frames…
+          </div>
           <Progress value={progress} />
         </div>
       )}
@@ -77,7 +101,13 @@ function VideoPage() {
       {!running && items.length > 0 && (
         <div className="mt-6 glass rounded-2xl p-6">
           <h2 className="font-display text-xl font-semibold mb-3">Aggregate</h2>
-          {top && <p className="mb-4 text-sm">Most-detected category: <span className="font-semibold">{DISPOSAL[top[0] as WasteClass].label}</span> ({top[1]} times)</p>}
+          {top && (
+            <p className="mb-4 text-sm">
+              Most-detected category:{" "}
+              <span className="font-semibold">{DISPOSAL[top[0] as WasteClass].label}</span> (
+              {top[1]} times)
+            </p>
+          )}
           <div className="grid sm:grid-cols-2 gap-2">
             {Object.entries(counts).map(([cls, n]) => {
               const d = DISPOSAL[cls as WasteClass];

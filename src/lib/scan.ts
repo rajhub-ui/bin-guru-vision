@@ -27,7 +27,9 @@ async function hashBase64(b64: string): Promise<string> {
   const sample = b64.length > 32_000 ? b64.slice(0, 16_000) + b64.slice(-16_000) : b64;
   const bytes = new TextEncoder().encode(sample);
   const buf = await crypto.subtle.digest("SHA-256", bytes);
-  return Array.from(new Uint8Array(buf)).map((b) => b.toString(16).padStart(2, "0")).join("");
+  return Array.from(new Uint8Array(buf))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
 }
 
 async function callClassify(imageBase64: string, mimeType: string): Promise<ClassifyResult> {
@@ -35,7 +37,9 @@ async function callClassify(imageBase64: string, mimeType: string): Promise<Clas
   const cached = cache.get(key);
   if (cached) return cached;
 
-  const { data: { session } } = await supabase.auth.getSession();
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
   const res = await fetch(FN_URL, {
     method: "POST",
     headers: {
@@ -46,8 +50,18 @@ async function callClassify(imageBase64: string, mimeType: string): Promise<Clas
     body: JSON.stringify({ imageBase64, mimeType }),
   });
   let data: Partial<ClassifyResult> & { error?: string } = {};
-  try { data = await res.json(); } catch { data = {}; }
-  if (!res.ok) return { items: [], summary: "", error: data.error ?? `HTTP ${res.status}`, retryable: res.status === 429 || res.status >= 500 };
+  try {
+    data = await res.json();
+  } catch {
+    data = {};
+  }
+  if (!res.ok)
+    return {
+      items: [],
+      summary: "",
+      error: data.error ?? `HTTP ${res.status}`,
+      retryable: res.status === 429 || res.status >= 500,
+    };
 
   const safeData: ClassifyResult = {
     items: Array.isArray(data.items) ? data.items : [],
@@ -92,7 +106,9 @@ export async function logDetection(opts: {
   carbon_grams: number;
   image_path?: string;
 }) {
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   if (!user) return;
   await supabase.from("detections").insert({
     user_id: user.id,
@@ -103,8 +119,15 @@ export async function logDetection(opts: {
     image_path: opts.image_path ?? null,
   });
   const inc = Math.max(1, Math.round(opts.confidence * 10));
-  const { data: profile } = await supabase.from("profiles").select("eco_score").eq("id", user.id).maybeSingle();
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("eco_score")
+    .eq("id", user.id)
+    .maybeSingle();
   if (profile) {
-    await supabase.from("profiles").update({ eco_score: (profile.eco_score ?? 0) + inc }).eq("id", user.id);
+    await supabase
+      .from("profiles")
+      .update({ eco_score: (profile.eco_score ?? 0) + inc })
+      .eq("id", user.id);
   }
 }

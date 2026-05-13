@@ -13,12 +13,12 @@ export const Route = createFileRoute("/_authenticated/live")({
 // Distinct AR overlay color per class
 const CLASS_COLORS: Record<string, string> = {
   plastic: "#38bdf8",
-  paper:   "#f59e0b",
-  metal:   "#94a3b8",
-  glass:   "#34d399",
+  paper: "#f59e0b",
+  metal: "#94a3b8",
+  glass: "#34d399",
   organic: "#84cc16",
-  ewaste:  "#f43f5e",
-  cloth:   "#a78bfa",
+  ewaste: "#f43f5e",
+  cloth: "#a78bfa",
 };
 
 function LivePage() {
@@ -33,7 +33,9 @@ function LivePage() {
 
   const start = async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: "environment" },
+      });
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
         await videoRef.current.play();
@@ -61,14 +63,19 @@ function LivePage() {
     const o = overlayRef.current;
     const wrap = wrapRef.current;
     if (!o || !wrap) return;
-    const w = wrap.clientWidth, h = wrap.clientHeight;
-    o.width = w; o.height = h;
+    const w = wrap.clientWidth,
+      h = wrap.clientHeight;
+    o.width = w;
+    o.height = h;
     const ctx = o.getContext("2d")!;
     ctx.clearRect(0, 0, w, h);
     items.forEach((it) => {
       if (!it.box) return;
       const [x, y, bw, bh] = it.box;
-      const px = x * w, py = y * h, pw = bw * w, ph = bh * h;
+      const px = x * w,
+        py = y * h,
+        pw = bw * w,
+        ph = bh * h;
       const color = CLASS_COLORS[it.class] ?? "#22c55e";
       // Glow box
       ctx.save();
@@ -80,7 +87,12 @@ function LivePage() {
       // Corner brackets for AR feel
       const c = Math.min(20, pw / 4, ph / 4);
       ctx.lineWidth = 5;
-      [[px,py,1,1],[px+pw,py,-1,1],[px,py+ph,1,-1],[px+pw,py+ph,-1,-1]].forEach(([cx,cy,sx,sy]) => {
+      [
+        [px, py, 1, 1],
+        [px + pw, py, -1, 1],
+        [px, py + ph, 1, -1],
+        [px + pw, py + ph, -1, -1],
+      ].forEach(([cx, cy, sx, sy]) => {
         ctx.beginPath();
         ctx.moveTo(cx as number, (cy as number) + (sy as number) * c);
         ctx.lineTo(cx as number, cy as number);
@@ -106,23 +118,32 @@ function LivePage() {
   useEffect(() => {
     if (!running) return;
     intervalRef.current = window.setInterval(async () => {
-      const v = videoRef.current; const c = captureRef.current;
+      const v = videoRef.current;
+      const c = captureRef.current;
       if (!v || !c || busy || v.videoWidth === 0) return;
       setBusy(true);
-      c.width = 640; c.height = (640 * v.videoHeight) / v.videoWidth;
+      c.width = 640;
+      c.height = (640 * v.videoHeight) / v.videoWidth;
       c.getContext("2d")!.drawImage(v, 0, 0, c.width, c.height);
       try {
         const res = await classifyCanvas(c);
         if (res.error || res.fallback) return; // silent fallback on busy AI
         setItems(res.items);
         for (const it of res.items) {
-          logDetection({ source: "live", predicted_class: it.class, confidence: it.confidence, carbon_grams: DISPOSAL[it.class].carbonGramsSaved });
+          logDetection({
+            source: "live",
+            predicted_class: it.class,
+            confidence: it.confidence,
+            carbon_grams: DISPOSAL[it.class].carbonGramsSaved,
+          });
         }
       } finally {
         setBusy(false);
       }
     }, 2500);
-    return () => { if (intervalRef.current) window.clearInterval(intervalRef.current); };
+    return () => {
+      if (intervalRef.current) window.clearInterval(intervalRef.current);
+    };
   }, [running, busy]);
 
   useEffect(() => () => stop(), []);
@@ -134,7 +155,9 @@ function LivePage() {
           <h1 className="text-4xl font-bold flex items-center gap-2">
             Live AR detection <Sparkles className="h-6 w-6 text-primary" />
           </h1>
-          <p className="text-muted-foreground mt-2">Point your camera at one or more items — EcoLens overlays AR boxes around each one.</p>
+          <p className="text-muted-foreground mt-2">
+            Point your camera at one or more items — EcoLens overlays AR boxes around each one.
+          </p>
         </div>
         {!running ? (
           <Button
@@ -156,7 +179,10 @@ function LivePage() {
         <div className="lg:col-span-3 glass rounded-2xl p-4 soft-shadow">
           <div ref={wrapRef} className="relative rounded-xl overflow-hidden bg-black aspect-video">
             <video ref={videoRef} className="w-full h-full object-cover" playsInline muted />
-            <canvas ref={overlayRef} className="absolute inset-0 w-full h-full pointer-events-none" />
+            <canvas
+              ref={overlayRef}
+              className="absolute inset-0 w-full h-full pointer-events-none"
+            />
             {!running && (
               <div className="absolute inset-0 grid place-items-center text-white/70 text-sm bg-black/40">
                 <div className="text-center">
@@ -190,18 +216,28 @@ function LivePage() {
                 const dec = DECOMPOSITION[it.class];
                 const color = CLASS_COLORS[it.class];
                 return (
-                  <div key={i} className="rounded-xl border p-3 bg-card" style={{ borderLeft: `4px solid ${color}` }}>
+                  <div
+                    key={i}
+                    className="rounded-xl border p-3 bg-card"
+                    style={{ borderLeft: `4px solid ${color}` }}
+                  >
                     <div className="flex items-center gap-3">
                       <div className="text-2xl">{d.emoji}</div>
                       <div className="flex-1 min-w-0">
                         <div className="font-semibold truncate">{it.label}</div>
                         <div className="text-xs text-muted-foreground">{d.bin}</div>
                       </div>
-                      <div className="text-xs tabular-nums font-mono">{Math.round(it.confidence * 100)}%</div>
+                      <div className="text-xs tabular-nums font-mono">
+                        {Math.round(it.confidence * 100)}%
+                      </div>
                     </div>
                     <div className="mt-2 text-xs space-y-1">
-                      <div><span className="font-semibold text-primary">Decompose:</span> {dec.time}</div>
-                      <div className="text-muted-foreground"><span className="font-medium text-foreground">How:</span> {dec.method}</div>
+                      <div>
+                        <span className="font-semibold text-primary">Decompose:</span> {dec.time}
+                      </div>
+                      <div className="text-muted-foreground">
+                        <span className="font-medium text-foreground">How:</span> {dec.method}
+                      </div>
                     </div>
                   </div>
                 );

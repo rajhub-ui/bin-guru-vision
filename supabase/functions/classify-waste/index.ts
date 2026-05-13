@@ -22,26 +22,33 @@ serve(async (req) => {
   try {
     const { imageBase64, mimeType = "image/jpeg" } = await req.json();
     if (!imageBase64) {
-      return new Response(JSON.stringify({ error: "imageBase64 required" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      return new Response(JSON.stringify({ error: "imageBase64 required" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY missing");
 
-    const callModel = (model: string) => fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" },
-      body: JSON.stringify({
-        model,
-        messages: [
-          { role: "system", content: SYSTEM },
-          { role: "user", content: [
-            { type: "text", text: "Classify the waste in this image." },
-            { type: "image_url", image_url: { url: `data:${mimeType};base64,${imageBase64}` } },
-          ] },
-        ],
-        response_format: { type: "json_object" },
-      }),
-    });
+    const callModel = (model: string) =>
+      fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model,
+          messages: [
+            { role: "system", content: SYSTEM },
+            {
+              role: "user",
+              content: [
+                { type: "text", text: "Classify the waste in this image." },
+                { type: "image_url", image_url: { url: `data:${mimeType};base64,${imageBase64}` } },
+              ],
+            },
+          ],
+          response_format: { type: "json_object" },
+        }),
+      });
 
     const models = ["google/gemini-3-flash-preview", "google/gemini-2.5-flash-lite"];
     const delays = [0, 800, 2000];
@@ -62,21 +69,42 @@ serve(async (req) => {
       const t = res ? await res.text() : "no response";
       console.error("AI gateway error", status, t);
       if (status === 429 || status >= 500) {
-        return new Response(JSON.stringify({ items: [], summary: "", fallback: true, retryable: true }), {
-          status: 200,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
+        return new Response(
+          JSON.stringify({ items: [], summary: "", fallback: true, retryable: true }),
+          {
+            status: 200,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          },
+        );
       }
-      if (status === 402) return new Response(JSON.stringify({ error: "AI credits exhausted. Add funds in Settings → Workspace → Usage." }), { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } });
-      return new Response(JSON.stringify({ error: "Vision request failed" }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      if (status === 402)
+        return new Response(
+          JSON.stringify({
+            error: "AI credits exhausted. Add funds in Settings → Workspace → Usage.",
+          }),
+          { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      return new Response(JSON.stringify({ error: "Vision request failed" }), {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
     const data = await res.json();
     const raw = data.choices?.[0]?.message?.content ?? "{}";
     let parsed: any;
-    try { parsed = JSON.parse(raw); } catch { parsed = { items: [], summary: "Could not parse model output." }; }
-    return new Response(JSON.stringify(parsed), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    try {
+      parsed = JSON.parse(raw);
+    } catch {
+      parsed = { items: [], summary: "Could not parse model output." };
+    }
+    return new Response(JSON.stringify(parsed), {
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
   } catch (e) {
     console.error(e);
-    return new Response(JSON.stringify({ items: [], summary: "", fallback: true, retryable: true }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    return new Response(
+      JSON.stringify({ items: [], summary: "", fallback: true, retryable: true }),
+      { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+    );
   }
 });
