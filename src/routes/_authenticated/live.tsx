@@ -107,8 +107,8 @@ function LivePage() {
       const ly = py > 26 ? py - 8 : py + ph + 22;
       ctx.fillStyle = color;
       ctx.beginPath();
-      (ctx as any).roundRect?.(px, ly - 18, tw, 22, 6);
-      if (!(ctx as any).roundRect) ctx.fillRect(px, ly - 18, tw, 22);
+      if ("roundRect" in ctx) ctx.roundRect(px, ly - 18, tw, 22, 6);
+      else ctx.rect(px, ly - 18, tw, 22);
       ctx.fill();
       ctx.fillStyle = "#0a0a0a";
       ctx.fillText(label, px + 7, ly - 3);
