@@ -105,6 +105,7 @@ export async function logDetection(opts: {
   confidence: number;
   carbon_grams: number;
   image_path?: string;
+  hazard_level?: string;
 }) {
   const {
     data: { user },
