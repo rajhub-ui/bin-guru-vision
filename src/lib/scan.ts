@@ -12,6 +12,8 @@ export interface ClassifyResult {
   items: DetectedItem[];
   summary: string;
   error?: string;
+  fallback?: boolean;
+  retryable?: boolean;
 }
 
 const FN_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/classify-waste`;
@@ -43,13 +45,21 @@ async function callClassify(imageBase64: string, mimeType: string): Promise<Clas
     },
     body: JSON.stringify({ imageBase64, mimeType }),
   });
-  const data = await res.json();
-  if (!res.ok) return { items: [], summary: "", error: data.error ?? `HTTP ${res.status}` };
+  let data: Partial<ClassifyResult> & { error?: string } = {};
+  try { data = await res.json(); } catch { data = {}; }
+  if (!res.ok) return { items: [], summary: "", error: data.error ?? `HTTP ${res.status}`, retryable: res.status === 429 || res.status >= 500 };
+
+  const safeData: ClassifyResult = {
+    items: Array.isArray(data.items) ? data.items : [],
+    summary: typeof data.summary === "string" ? data.summary : "",
+    fallback: Boolean(data.fallback),
+    retryable: Boolean(data.retryable),
+  };
 
   // LRU-ish trim
   if (cache.size >= CACHE_MAX) cache.delete(cache.keys().next().value as string);
-  cache.set(key, data);
-  return data;
+  if (!safeData.fallback) cache.set(key, safeData);
+  return safeData;
 }
 
 export async function classifyFile(file: File): Promise<ClassifyResult> {
