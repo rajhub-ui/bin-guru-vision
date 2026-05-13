@@ -20,6 +20,23 @@ interface PageResult {
   summary: string;
 }
 
+interface PdfJsModule {
+  GlobalWorkerOptions: { workerSrc: string };
+  getDocument: (options: { data: ArrayBuffer }) => {
+    promise: Promise<{
+      numPages: number;
+      getPage: (pageNumber: number) => Promise<{
+        getViewport: (options: { scale: number }) => { width: number; height: number };
+        render: (options: {
+          canvasContext: CanvasRenderingContext2D;
+          viewport: { width: number; height: number };
+          canvas: HTMLCanvasElement;
+        }) => { promise: Promise<void> };
+      }>;
+    }>;
+  };
+}
+
 function PdfPage() {
   const inputRef = useRef<HTMLInputElement>(null);
   const [pages, setPages] = useState<PageResult[]>([]);
@@ -34,7 +51,7 @@ function PdfPage() {
     setFileName(file.name);
     try {
       // Lazy-load pdfjs and configure worker (Vite-friendly)
-      const pdfjs: any = await import("pdfjs-dist");
+      const pdfjs = (await import("pdfjs-dist")) as PdfJsModule;
       const workerUrl = (await import("pdfjs-dist/build/pdf.worker.min.mjs?url")).default;
       pdfjs.GlobalWorkerOptions.workerSrc = workerUrl;
 
