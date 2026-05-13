@@ -17,6 +17,20 @@ const SYSTEM = `You are a multi-object waste detector. Identify EVERY distinct w
 Return ONLY valid JSON: {"items":[{"label":"<short object name>","class":"plastic|paper|metal|glass|organic|ewaste|cloth","confidence":0.0-1.0,"box":[x,y,w,h]}],"summary":"one short sentence"}.
 box MUST be provided as normalized 0..1 image coords [x,y,width,height] for each item so the UI can draw an AR overlay. If no waste visible, return items: [].`;
 
+type WasteClass = "plastic" | "paper" | "metal" | "glass" | "organic" | "ewaste" | "cloth";
+
+type ClassifyResult = {
+  items: Array<{
+    label: string;
+    class: WasteClass;
+    confidence: number;
+    box: [number, number, number, number] | null;
+  }>;
+  summary: string;
+  fallback?: boolean;
+  retryable?: boolean;
+};
+
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
   try {
@@ -91,7 +105,7 @@ serve(async (req) => {
     }
     const data = await res.json();
     const raw = data.choices?.[0]?.message?.content ?? "{}";
-    let parsed: any;
+    let parsed: ClassifyResult;
     try {
       parsed = JSON.parse(raw);
     } catch {
