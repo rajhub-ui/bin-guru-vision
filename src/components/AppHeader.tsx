@@ -1,5 +1,5 @@
 import { Link, useRouter } from "@tanstack/react-router";
-import { Leaf, Camera, Video, FileText, MessageCircle, LayoutDashboard, LogOut, Menu, X } from "lucide-react";
+import { Leaf, Camera, Video, FileText, MessageCircle, LayoutDashboard, LogOut, Menu, X, Map, ShieldCheck } from "lucide-react";
 import { useState } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
@@ -10,7 +10,9 @@ const NAV = [
   { to: "/video", label: "Video", icon: Video },
   { to: "/pdf", label: "PDF", icon: FileText },
   { to: "/chat", label: "Assistant", icon: MessageCircle },
+  { to: "/disposal", label: "Map", icon: Map },
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { to: "/admin", label: "Admin", icon: ShieldCheck },
 ] as const;
 
 export function AppHeader() {
