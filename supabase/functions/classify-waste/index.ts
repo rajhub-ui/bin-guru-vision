@@ -43,7 +43,7 @@ serve(async (req) => {
       }),
     });
 
-    const models = ["google/gemini-2.5-flash", "google/gemini-2.5-flash-lite"];
+    const models = ["google/gemini-3-flash-preview", "google/gemini-2.5-flash-lite"];
     const delays = [0, 800, 2000];
     let res: Response | null = null;
     outer: for (const model of models) {
@@ -61,7 +61,12 @@ serve(async (req) => {
       const status = res?.status ?? 500;
       const t = res ? await res.text() : "no response";
       console.error("AI gateway error", status, t);
-      if (status === 429) return new Response(JSON.stringify({ error: "AI is busy right now — please retry in a few seconds.", retryable: true }), { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      if (status === 429 || status >= 500) {
+        return new Response(JSON.stringify({ items: [], summary: "", fallback: true, retryable: true }), {
+          status: 200,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
       if (status === 402) return new Response(JSON.stringify({ error: "AI credits exhausted. Add funds in Settings → Workspace → Usage." }), { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } });
       return new Response(JSON.stringify({ error: "Vision request failed" }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
@@ -72,6 +77,6 @@ serve(async (req) => {
     return new Response(JSON.stringify(parsed), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
   } catch (e) {
     console.error(e);
-    return new Response(JSON.stringify({ error: e instanceof Error ? e.message : "Unknown error" }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    return new Response(JSON.stringify({ items: [], summary: "", fallback: true, retryable: true }), { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } });
   }
 });
