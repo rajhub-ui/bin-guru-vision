@@ -1,12 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { lazy, Suspense, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type ComponentType } from "react";
 import { Navigation, Loader2, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
+import type { MapPlace } from "@/components/DisposalMap";
 
-// Leaflet uses `window` at module top — load only on the client.
-const DisposalMap = lazy(() => import("@/components/DisposalMap"));
+// Leaflet touches `window` at import time — only require it on the client.
+type DisposalMapType = ComponentType<{ pos: [number, number]; places: MapPlace[] }>;
 
 interface FacilitySearch {
   q?: string;
