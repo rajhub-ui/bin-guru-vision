@@ -1,12 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { lazy, Suspense, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type ComponentType } from "react";
 import { Navigation, Loader2, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
+import type { MapPlace } from "@/components/DisposalMap";
 
-// Leaflet uses `window` at module top — load only on the client.
-const DisposalMap = lazy(() => import("@/components/DisposalMap"));
+// Leaflet touches `window` at import time — only require it on the client.
+type DisposalMapType = ComponentType<{ pos: [number, number]; places: MapPlace[] }>;
 
 interface FacilitySearch {
   q?: string;
@@ -64,6 +65,16 @@ function DisposalPage() {
   const [loading, setLoading] = useState(false);
   const [active, setActive] = useState<string>(search.q ?? "recycling");
   const [custom, setCustom] = useState("");
+  const [MapComp, setMapComp] = useState<DisposalMapType | null>(null);
+
+  // Client-only Leaflet import (avoids SSR `window is not defined`).
+  useEffect(() => {
+    let cancelled = false;
+    import("@/components/DisposalMap").then((m) => {
+      if (!cancelled) setMapComp(() => m.default);
+    });
+    return () => { cancelled = true; };
+  }, []);
 
   // get geolocation
   useEffect(() => {
@@ -198,10 +209,8 @@ function DisposalPage() {
         </aside>
 
         <div className="rounded-2xl overflow-hidden border soft-shadow h-[70vh]">
-          {pos ? (
-            <Suspense fallback={<div className="h-full grid place-items-center text-muted-foreground"><Loader2 className="h-6 w-6 animate-spin" /></div>}>
-              <DisposalMap pos={pos} places={places} />
-            </Suspense>
+          {pos && MapComp ? (
+            <MapComp pos={pos} places={places} />
           ) : (
             <div className="h-full grid place-items-center text-muted-foreground">
               <Loader2 className="h-6 w-6 animate-spin" />
