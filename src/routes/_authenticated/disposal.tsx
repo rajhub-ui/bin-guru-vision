@@ -209,10 +209,8 @@ function DisposalPage() {
         </aside>
 
         <div className="rounded-2xl overflow-hidden border soft-shadow h-[70vh]">
-          {pos ? (
-            <Suspense fallback={<div className="h-full grid place-items-center text-muted-foreground"><Loader2 className="h-6 w-6 animate-spin" /></div>}>
-              <DisposalMap pos={pos} places={places} />
-            </Suspense>
+          {pos && MapComp ? (
+            <MapComp pos={pos} places={places} />
           ) : (
             <div className="h-full grid place-items-center text-muted-foreground">
               <Loader2 className="h-6 w-6 animate-spin" />
