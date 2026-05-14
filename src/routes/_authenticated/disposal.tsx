@@ -65,6 +65,16 @@ function DisposalPage() {
   const [loading, setLoading] = useState(false);
   const [active, setActive] = useState<string>(search.q ?? "recycling");
   const [custom, setCustom] = useState("");
+  const [MapComp, setMapComp] = useState<DisposalMapType | null>(null);
+
+  // Client-only Leaflet import (avoids SSR `window is not defined`).
+  useEffect(() => {
+    let cancelled = false;
+    import("@/components/DisposalMap").then((m) => {
+      if (!cancelled) setMapComp(() => m.default);
+    });
+    return () => { cancelled = true; };
+  }, []);
 
   // get geolocation
   useEffect(() => {
