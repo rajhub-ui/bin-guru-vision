@@ -56,13 +56,6 @@ function haversine(a: [number, number], b: [number, number]): number {
   return 2 * R * Math.asin(Math.sqrt(x));
 }
 
-function Recenter({ pos }: { pos: [number, number] | null }) {
-  const map = useMap();
-  useEffect(() => {
-    if (pos) map.setView(pos, 13);
-  }, [pos, map]);
-  return null;
-}
 
 function DisposalPage() {
   const search = Route.useSearch();
