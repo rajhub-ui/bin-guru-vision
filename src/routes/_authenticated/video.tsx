@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { classifyCanvas, logDetection, type DetectedItem } from "@/lib/scan";
 import { DISPOSAL, type WasteClass } from "@/lib/disposal";
+import { EcoAssistant } from "@/components/EcoAssistant";
 
 export const Route = createFileRoute("/_authenticated/video")({
   head: () => ({ meta: [{ title: "Video — EcoLens AI" }] }),
@@ -122,6 +123,15 @@ function VideoPage() {
           </div>
         </div>
       )}
+
+      <EcoAssistant
+        title="Video analysis assistant"
+        context={
+          Object.keys(counts).length
+            ? `Aggregate detections from video: ${Object.entries(counts).map(([c, n]) => `${DISPOSAL[c as WasteClass].label}: ${n}`).join(", ")}.`
+            : undefined
+        }
+      />
     </div>
   );
 }

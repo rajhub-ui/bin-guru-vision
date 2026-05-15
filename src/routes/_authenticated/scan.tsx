@@ -7,6 +7,7 @@ import { classifyFile, logDetection, type DetectedItem } from "@/lib/scan";
 import { DISPOSAL, DECOMPOSITION } from "@/lib/disposal";
 import { detectHazard, type HazardInfo } from "@/lib/hazard";
 import { HazardAlert } from "@/components/HazardAlert";
+import { EcoAssistant } from "@/components/EcoAssistant";
 
 export const Route = createFileRoute("/_authenticated/scan")({
   head: () => ({ meta: [{ title: "Scan — EcoLens AI" }] }),
@@ -198,6 +199,14 @@ function ScanPage() {
           )}
         </div>
       </div>
+
+      <EcoAssistant
+        context={
+          items && items.length
+            ? `Detected items: ${items.map((i) => `${i.label} (${i.class})`).join(", ")}.${hazard ? ` Hazard level: ${hazard.level}.` : ""}`
+            : undefined
+        }
+      />
     </div>
   );
 }
