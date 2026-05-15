@@ -6,6 +6,7 @@ import { Progress } from "@/components/ui/progress";
 import { toast } from "sonner";
 import { classifyCanvas, logDetection, type DetectedItem } from "@/lib/scan";
 import { DISPOSAL, DECOMPOSITION } from "@/lib/disposal";
+import { EcoAssistant } from "@/components/EcoAssistant";
 import jsPDF from "jspdf";
 
 export const Route = createFileRoute("/_authenticated/pdf")({
@@ -318,6 +319,11 @@ function PdfPage() {
           </div>
         </>
       )}
+
+      <EcoAssistant
+        title="PDF analysis assistant"
+        context="The user analyzed a PDF document for waste items. Help them understand disposal and recycling for items found across pages."
+      />
     </div>
   );
 }

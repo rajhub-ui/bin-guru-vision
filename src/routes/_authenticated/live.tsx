@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Play, Square, Loader2, Camera as CameraIcon, Sparkles } from "lucide-react";
 import { classifyCanvas, logDetection, type DetectedItem } from "@/lib/scan";
 import { DISPOSAL, DECOMPOSITION } from "@/lib/disposal";
+import { EcoAssistant } from "@/components/EcoAssistant";
 
 export const Route = createFileRoute("/_authenticated/live")({
   head: () => ({ meta: [{ title: "Live AR detection — EcoLens AI" }] }),
@@ -245,6 +246,15 @@ function LivePage() {
           )}
         </div>
       </div>
+
+      <EcoAssistant
+        title="Live detection assistant"
+        context={
+          items.length
+            ? `Currently in frame: ${items.map((i) => `${i.label} (${i.class})`).join(", ")}.`
+            : undefined
+        }
+      />
     </div>
   );
 }
