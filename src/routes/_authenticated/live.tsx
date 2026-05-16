@@ -3,8 +3,9 @@ import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Play, Square, Loader2, Camera as CameraIcon, Sparkles } from "lucide-react";
 import { classifyCanvas, logDetection, type DetectedItem } from "@/lib/scan";
-import { DISPOSAL, DECOMPOSITION } from "@/lib/disposal";
+import { DISPOSAL, DECOMPOSITION, MATERIALS } from "@/lib/disposal";
 import { EcoAssistant } from "@/components/EcoAssistant";
+import { NearbyDisposal } from "@/components/NearbyDisposal";
 
 export const Route = createFileRoute("/_authenticated/live")({
   head: () => ({ meta: [{ title: "Live AR detection — EcoLens AI" }] }),
