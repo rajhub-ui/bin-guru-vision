@@ -101,6 +101,39 @@ export type Database = {
         }
         Relationships: []
       }
+      disposal_proofs: {
+        Row: {
+          centre_id: string
+          centre_name: string
+          created_at: string
+          detection_id: string | null
+          eco_points_awarded: number
+          id: string
+          image_path: string
+          user_id: string
+        }
+        Insert: {
+          centre_id: string
+          centre_name: string
+          created_at?: string
+          detection_id?: string | null
+          eco_points_awarded?: number
+          id?: string
+          image_path: string
+          user_id: string
+        }
+        Update: {
+          centre_id?: string
+          centre_name?: string
+          created_at?: string
+          detection_id?: string | null
+          eco_points_awarded?: number
+          id?: string
+          image_path?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string

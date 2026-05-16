@@ -1,55 +1,53 @@
-## EcoLens AI — Phase 1: Smart City Core
+## Goal
+Enhance the live detector with material/decomposition info, restrict the disposal map to **5 hardcoded centres near RNSIT (RR Nagar, Bangalore)**, auto-open the map when waste is detected, and add a "proof of dumping" photo upload that grants eco-points.
 
-Honest constraints first:
-- This stack is **TanStack Start (web) + Lovable Cloud**. We can't ship native mobile (RN/Flutter), Python/FastAPI, MongoDB, ESP32 firmware, or train YOLOv8 here — those need separate repos/hardware.
-- Existing AI detection (Lovable AI Gateway / Gemini vision) **stays as-is** and we extend around it. No model swap.
-- Maps: VITE_ secrets must live in `.env` (the secret tool rejected `VITE_GOOGLE_MAPS_API_KEY`). To unblock immediately I'll use **Leaflet + OpenStreetMap + Nominatim** (free, no key, looks great with custom tiles). We can swap to Google Maps later by replacing one component if you provide the key directly.
+## 1. Live detector — richer waste info
+File: `src/routes/_authenticated/live.tsx` (+ extend `src/lib/disposal.ts`)
+- For every detected item, render a "Material & decomposition" card alongside the existing label/bin info:
+  - Material composition (e.g. plastic → PET / HDPE polymer, metal → aluminium / steel alloy, glass → silica + soda + lime, organic → cellulose / biomass…)
+  - Decomposition method + estimated time (already partly in `DECOMPOSITION` — extend with a `materials` field).
+- Add a `MATERIALS` map in `disposal.ts` keyed by `WasteClass`.
 
-## What I'll build now
+## 2. Hardcoded RNSIT/RR Nagar centres (5 places)
+New file: `src/lib/rrnagar-centres.ts`
+- Exactly **5** entries: `{ id, name, lat, lon, type, address, accepts: WasteClass[] }` within ~5 km of RNSIT College (12.9166°N, 77.4974°E):
+  1. BBMP Dry Waste Collection Centre — RR Nagar
+  2. E-Parisaraa E-Waste Collection Point — Kengeri
+  3. Saahas Zero Waste Hub — Channasandra
+  4. Local Scrap Dealer / Metal Recycler — BEML Layout
+  5. Compost & Organic Waste Hub — Ullal Main Road
+- Each centre lists which waste classes it accepts so the map can filter by detection class.
 
-### 1. Visual overhaul — "Eco Daylight" smart-city theme
-- New tokens in `src/styles.css`: warm cream bg `#f5f0e8`, sage `#dce5d4`, civic teal `#2d8a9e`, deep forest `#1b4332`, gradients + soft shadows.
-- Display font pair: Sora (headings) + Inter (body).
-- Glassmorphism cards, animated stat counters, subtle grid background.
-- Refreshed `AppHeader`, `SiteFooter`, landing `index.tsx`, dashboard cards.
+Update `src/routes/_authenticated/disposal.tsx`:
+- Remove Nominatim live search.
+- Show only these 5 centres, filterable by waste class.
+- Map auto-centres on RNSIT; user location marker shown if permission granted.
+- Accept `?class=<wasteClass>` search param → auto-filter centres that accept that class.
 
-### 2. Disposal navigation (`/disposal`)
-- Leaflet map centered on user geolocation.
-- Nominatim search for nearby `recycling`, `waste_basket`, `waste_disposal`, `recycling_centre` POIs.
-- Filter chips by waste type (plastic / e-waste / hazardous / glass / metal / organic / cloth).
-- Selected facility → distance, ETA, "Open in Google Maps" deep link, route polyline via OSRM.
-- "Find nearest disposal" CTA appears on every detection result card.
+## 3. Auto-show map on detection
+File: `src/routes/_authenticated/live.tsx`
+- When a detection occurs, render an inline "Nearest disposal centres" panel below the detection card (reuses `DisposalMap` + the hardcoded list, filtered by detected class).
+- Each centre row gets a "Navigate" button (Google Maps directions) and an "I dumped here" button → opens the proof-upload dialog (step 4).
 
-### 3. Hazardous waste alert system
-- Extend the edge-function classifier to flag `ewaste`, plus new pseudo-classes inferred from labels: `battery`, `medical`, `chemical`, `sharps` (regex on returned label text — no model change).
-- New `HazardAlert` component: red glass banner, audio beep (Web Audio API, no asset), PPE icons, step-by-step disposal, "Find hazardous center" → `/disposal?type=hazardous`.
-- Logged to `detections` with a `hazard_level` flag (migration adds nullable column).
+## 4. Proof-of-dumping photo upload → eco-points
+DB migration:
+- New table `disposal_proofs` (id, user_id, detection_id nullable, centre_id text, centre_name text, image_path, eco_points_awarded int, created_at)
+- RLS: users CRUD their own rows only.
+- Storage bucket `disposal-proofs` (private); policies allow users to upload/read their own `{userId}/...` folder.
 
-### 4. Admin analytics dashboard (`/admin`)
-- Gated by `user_roles.role = 'admin'` (table already exists).
-- Recharts: detections per day (area), waste-class breakdown (pie), CO₂e saved (bar), top hazard counts.
-- Heatmap-lite: detections grouped by hour-of-day (recharts heatmap grid).
-- "Promote me to admin" dev button (only visible if no admin exists yet) — inserts row via server function for first-run convenience.
+Flow (in `live.tsx`, reused on `scan.tsx`):
+- "I dumped it — upload proof" button opens a dialog with file/camera input.
+- Upload image to `disposal-proofs/{userId}/{uuid}.jpg`.
+- Insert `disposal_proofs` row with `eco_points_awarded = 25` (flat; +10 bonus for e-waste/hazardous).
+- Increment `profiles.eco_score` by the same amount.
+- Toast: "🎉 +25 eco-points awarded".
 
-### 5. New nav structure
-```
-/                       landing (smart-city hero)
-/auth                   (existing)
-/_authenticated/
-  dashboard             (existing, restyled)
-  scan, live, video, pdf, chat  (existing, restyled cards)
-  disposal              NEW — map + facilities
-  admin                 NEW — analytics, role-gated
-```
+## Technical details
+- The 5 centres are static client data — no Nominatim, no rate limits, instant load.
+- `DisposalMap` already accepts a `MapPlace[]`; no change to that component needed.
+- Eco-point award reuses the existing `profiles.eco_score` column.
+- Image upload uses the existing supabase storage client; a new bucket separate from `scans`.
 
-## Deferred to Phase 2 (roadmap, not built now)
-QR household tracking · IoT smart-bin dashboard · voice assistant · offline PWA · predictive pickup routing · multi-language · React Native mobile · real ESP32/MQTT · model retraining.
-
-## Tech notes
-- Add `leaflet`, `react-leaflet`, `recharts` (already present? will check), `@types/leaflet`.
-- New server function `src/lib/admin.functions.ts` for role check + analytics aggregation (RLS-safe).
-- Migration: `ALTER TABLE detections ADD COLUMN hazard_level text NULL;`
-- All new pages get `head()` SEO metadata.
-- No business-logic change to existing scan/classify pipeline beyond hazard label flagging.
-
-Approve and I'll execute.
+## Out of scope
+- Verifying the photo actually shows the waste at the centre (trust-based for now).
+- Per-centre opening hours / phone numbers (left as `null`).
