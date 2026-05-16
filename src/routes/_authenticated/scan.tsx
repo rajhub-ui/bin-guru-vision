@@ -201,6 +201,10 @@ function ScanPage() {
         </div>
       </div>
 
+      {items && items.length > 0 && (
+        <NearbyDisposal wasteClass={items[0].class} />
+      )}
+
       <EcoAssistant
         context={
           items && items.length
