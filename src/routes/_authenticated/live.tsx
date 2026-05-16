@@ -215,6 +215,7 @@ function LivePage() {
               {items.map((it, i) => {
                 const d = DISPOSAL[it.class];
                 const dec = DECOMPOSITION[it.class];
+                const mat = MATERIALS[it.class];
                 const color = CLASS_COLORS[it.class];
                 return (
                   <div
@@ -226,18 +227,34 @@ function LivePage() {
                       <div className="text-2xl">{d.emoji}</div>
                       <div className="flex-1 min-w-0">
                         <div className="font-semibold truncate">{it.label}</div>
-                        <div className="text-xs text-muted-foreground">{d.bin}</div>
+                        <div className="text-xs text-muted-foreground capitalize">
+                          {d.label} · {d.bin}
+                        </div>
                       </div>
                       <div className="text-xs tabular-nums font-mono">
                         {Math.round(it.confidence * 100)}%
                       </div>
                     </div>
-                    <div className="mt-2 text-xs space-y-1">
+                    <div className="mt-3 rounded-lg border bg-accent/30 p-2.5 text-xs space-y-1.5">
                       <div>
-                        <span className="font-semibold text-primary">Decompose:</span> {dec.time}
+                        <span className="font-semibold text-primary">Material:</span>{" "}
+                        <span className="text-muted-foreground">{mat.composition}</span>
                       </div>
-                      <div className="text-muted-foreground">
-                        <span className="font-medium text-foreground">How:</span> {dec.method}
+                      <div>
+                        <span className="font-semibold text-primary">How it's made:</span>{" "}
+                        <span className="text-muted-foreground">{mat.manufacturing}</span>
+                      </div>
+                      <div>
+                        <span className="font-semibold text-primary">Decomposes in:</span>{" "}
+                        <span className="text-muted-foreground">{dec.time}</span>
+                      </div>
+                      <div>
+                        <span className="font-semibold text-primary">Recycling method:</span>{" "}
+                        <span className="text-muted-foreground">{dec.method}</span>
+                      </div>
+                      <div>
+                        <span className="font-semibold text-primary">Becomes:</span>{" "}
+                        <span className="text-muted-foreground">{mat.recycledInto}</span>
                       </div>
                     </div>
                   </div>
