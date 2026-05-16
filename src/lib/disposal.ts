@@ -120,3 +120,55 @@ export const DECOMPOSITION: Record<WasteClass, { time: string; method: string }>
 export const WASTE_CLASSES: WasteClass[] = [
   "plastic", "paper", "metal", "glass", "organic", "ewaste", "cloth",
 ];
+
+export interface MaterialInfo {
+  composition: string;        // what it's made of
+  manufacturing: string;      // how it's typically produced
+  decomposes: string;         // natural decomposition time
+  recycledInto: string;       // what it can be turned into
+}
+
+export const MATERIALS: Record<WasteClass, MaterialInfo> = {
+  plastic: {
+    composition: "Polymers — typically PET, HDPE, PP or PVC derived from crude-oil hydrocarbons.",
+    manufacturing: "Naphtha cracked into monomers, polymerised under heat & pressure, then injection-moulded or blow-moulded.",
+    decomposes: "450+ years in landfill; never fully — breaks into microplastics.",
+    recycledInto: "Pellets → new bottles, polyester fibre, park benches, road asphalt blends.",
+  },
+  paper: {
+    composition: "Cellulose fibres from wood pulp, plus fillers (kaolin clay, calcium carbonate) and ink.",
+    manufacturing: "Logs pulped & bleached, fibres laid on mesh, pressed and dried into sheets.",
+    decomposes: "2–6 weeks in compost; faster when shredded.",
+    recycledInto: "Newsprint, cardboard, egg cartons, insulation, tissue paper.",
+  },
+  metal: {
+    composition: "Aluminium, tin-plated steel or stainless alloys — refined from bauxite / iron ore.",
+    manufacturing: "Ore smelted in blast / electrolytic furnace, rolled into sheets, stamped or drawn into cans.",
+    decomposes: "50–500 years; doesn't biodegrade but oxidises (rusts) over decades.",
+    recycledInto: "New cans, car parts, bicycle frames — infinitely recyclable with 95% less energy.",
+  },
+  glass: {
+    composition: "Silica sand (~70%) + soda ash + limestone, melted at ~1500 °C.",
+    manufacturing: "Raw mix melted in a furnace, gob blown or pressed into bottles, annealed to relieve stress.",
+    decomposes: "1 million+ years — practically inert.",
+    recycledInto: "Crushed into cullet, re-melted into new bottles, fibreglass, road aggregate.",
+  },
+  organic: {
+    composition: "Cellulose, starch, proteins, water — biomass from plants or animals.",
+    manufacturing: "Grown / farmed; no industrial fabrication.",
+    decomposes: "2–6 weeks via aerobic composting; weeks–months in landfill (produces methane).",
+    recycledInto: "Nutrient-rich compost, biogas (methane) and digestate fertiliser.",
+  },
+  ewaste: {
+    composition: "Mixed metals (Cu, Au, Ag, Pd), plastics, lithium / lead batteries, glass, flame retardants.",
+    manufacturing: "Silicon wafers etched into chips, PCBs assembled with solder, housed in plastic/metal cases.",
+    decomposes: "Never — leaches heavy metals (Pb, Hg, Cd) into soil and groundwater.",
+    recycledInto: "Recovered gold, copper, rare earths; refurbished components; safe-disposed batteries.",
+  },
+  cloth: {
+    composition: "Natural fibres (cotton, wool, linen) or synthetics (polyester, nylon, acrylic) + dyes.",
+    manufacturing: "Fibres spun into yarn, woven or knitted, dyed and finished with chemical treatments.",
+    decomposes: "Natural fibres: 5 months – 1 year. Synthetics: 20–40 years (shed microplastics).",
+    recycledInto: "Industrial rags, insulation, shredded yarn, upcycled fashion.",
+  },
+};
