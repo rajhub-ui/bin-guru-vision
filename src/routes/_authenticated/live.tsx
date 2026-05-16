@@ -265,6 +265,10 @@ function LivePage() {
         </div>
       </div>
 
+      {items.length > 0 && (
+        <NearbyDisposal wasteClass={items[0].class} />
+      )}
+
       <EcoAssistant
         title="Live detection assistant"
         context={
