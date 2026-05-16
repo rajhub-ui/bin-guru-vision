@@ -8,6 +8,7 @@ import { DISPOSAL, DECOMPOSITION } from "@/lib/disposal";
 import { detectHazard, type HazardInfo } from "@/lib/hazard";
 import { HazardAlert } from "@/components/HazardAlert";
 import { EcoAssistant } from "@/components/EcoAssistant";
+import { NearbyDisposal } from "@/components/NearbyDisposal";
 
 export const Route = createFileRoute("/_authenticated/scan")({
   head: () => ({ meta: [{ title: "Scan — EcoLens AI" }] }),
