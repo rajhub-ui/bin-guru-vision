@@ -232,6 +232,11 @@ export type Database = {
         | "organic"
         | "ewaste"
         | "cloth"
+        | "battery"
+        | "hazardous"
+        | "wood"
+        | "rubber"
+        | "medical"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -369,6 +374,11 @@ export const Constants = {
         "organic",
         "ewaste",
         "cloth",
+        "battery",
+        "hazardous",
+        "wood",
+        "rubber",
+        "medical",
       ],
     },
   },

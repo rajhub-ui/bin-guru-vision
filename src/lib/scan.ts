@@ -106,20 +106,24 @@ export async function logDetection(opts: {
   carbon_grams: number;
   image_path?: string;
   hazard_level?: string;
-}) {
+}): Promise<string | null> {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return;
-  await supabase.from("detections").insert({
-    user_id: user.id,
-    source: opts.source,
-    predicted_class: opts.predicted_class,
-    confidence: opts.confidence,
-    carbon_grams: opts.carbon_grams,
-    image_path: opts.image_path ?? null,
-    hazard_level: opts.hazard_level ?? null,
-  });
+  if (!user) return null;
+  const { data: ins } = await supabase
+    .from("detections")
+    .insert({
+      user_id: user.id,
+      source: opts.source,
+      predicted_class: opts.predicted_class,
+      confidence: opts.confidence,
+      carbon_grams: opts.carbon_grams,
+      image_path: opts.image_path ?? null,
+      hazard_level: opts.hazard_level ?? null,
+    })
+    .select("id")
+    .maybeSingle();
   const inc = Math.max(1, Math.round(opts.confidence * 10));
   const { data: profile } = await supabase
     .from("profiles")
@@ -132,4 +136,5 @@ export async function logDetection(opts: {
       .update({ eco_score: (profile.eco_score ?? 0) + inc })
       .eq("id", user.id);
   }
+  return ins?.id ?? null;
 }

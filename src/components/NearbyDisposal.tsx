@@ -20,11 +20,11 @@ function haversine(a: [number, number], b: [number, number]) {
 
 export interface NearbyDisposalProps {
   wasteClass: WasteClass | null;
-  /** When provided, restricts visible centres. If null/undefined → show all 5. */
   compact?: boolean;
+  detectionId?: string | null;
 }
 
-export function NearbyDisposal({ wasteClass, compact = false }: NearbyDisposalProps) {
+export function NearbyDisposal({ wasteClass, compact = false, detectionId }: NearbyDisposalProps) {
   const [pos, setPos] = useState<[number, number]>(RNSIT_POS);
   const [MapComp, setMapComp] = useState<DisposalMapType | null>(null);
   const [proofOpen, setProofOpen] = useState(false);
@@ -61,6 +61,20 @@ export function NearbyDisposal({ wasteClass, compact = false }: NearbyDisposalPr
     lon: c.lon,
     distance_km: c.distance_km,
   }));
+
+  // Hide the whole panel while the proof dialog is open so the map doesn't
+  // overlap or distract from the camera/upload flow.
+  if (proofOpen) {
+    return (
+      <DisposalProofDialog
+        open={proofOpen}
+        onOpenChange={setProofOpen}
+        centre={activeCentre}
+        wasteClass={wasteClass}
+        detectionId={detectionId ?? null}
+      />
+    );
+  }
 
   return (
     <div className="glass rounded-2xl p-4 soft-shadow mt-6">
@@ -122,13 +136,6 @@ export function NearbyDisposal({ wasteClass, compact = false }: NearbyDisposalPr
           ))}
         </ul>
       </div>
-
-      <DisposalProofDialog
-        open={proofOpen}
-        onOpenChange={setProofOpen}
-        centre={activeCentre}
-        wasteClass={wasteClass}
-      />
     </div>
   );
 }

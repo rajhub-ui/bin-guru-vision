@@ -14,13 +14,10 @@ export const Route = createFileRoute("/_authenticated/live")({
 
 // Distinct AR overlay color per class
 const CLASS_COLORS: Record<string, string> = {
-  plastic: "#38bdf8",
-  paper: "#f59e0b",
-  metal: "#94a3b8",
-  glass: "#34d399",
-  organic: "#84cc16",
-  ewaste: "#f43f5e",
-  cloth: "#a78bfa",
+  plastic: "#38bdf8", paper: "#f59e0b", metal: "#94a3b8", glass: "#34d399",
+  organic: "#84cc16", ewaste: "#f43f5e", cloth: "#a78bfa",
+  battery: "#ef4444", hazardous: "#dc2626", wood: "#a16207",
+  rubber: "#475569", medical: "#ec4899",
 };
 
 function LivePage() {
@@ -30,6 +27,9 @@ function LivePage() {
   const wrapRef = useRef<HTMLDivElement>(null);
   const [running, setRunning] = useState(false);
   const [items, setItems] = useState<DetectedItem[]>([]);
+  const [detectionIds, setDetectionIds] = useState<(string | null)[]>([]);
+  const [activeIdx, setActiveIdx] = useState<number>(0);
+  const [focusQuery, setFocusQuery] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const intervalRef = useRef<number | null>(null);
 
@@ -130,14 +130,17 @@ function LivePage() {
         const res = await classifyCanvas(c);
         if (res.error || res.fallback) return; // silent fallback on busy AI
         setItems(res.items);
-        for (const it of res.items) {
-          logDetection({
-            source: "live",
-            predicted_class: it.class,
-            confidence: it.confidence,
-            carbon_grams: DISPOSAL[it.class].carbonGramsSaved,
-          });
-        }
+        const ids = await Promise.all(
+          res.items.map((it) =>
+            logDetection({
+              source: "live",
+              predicted_class: it.class,
+              confidence: it.confidence,
+              carbon_grams: DISPOSAL[it.class].carbonGramsSaved,
+            }),
+          ),
+        );
+        setDetectionIds(ids);
       } finally {
         setBusy(false);
       }
@@ -182,7 +185,23 @@ function LivePage() {
             <video ref={videoRef} className="w-full h-full object-cover" playsInline muted />
             <canvas
               ref={overlayRef}
-              className="absolute inset-0 w-full h-full pointer-events-none"
+              onClick={(e) => {
+                if (!wrapRef.current) return;
+                const rect = wrapRef.current.getBoundingClientRect();
+                const x = (e.clientX - rect.left) / rect.width;
+                const y = (e.clientY - rect.top) / rect.height;
+                for (let i = 0; i < items.length; i++) {
+                  const it = items[i];
+                  if (!it.box) continue;
+                  const [bx, by, bw, bh] = it.box;
+                  if (x >= bx && x <= bx + bw && y >= by && y <= by + bh) {
+                    setActiveIdx(i);
+                    setFocusQuery(`Tell me specifically about the ${it.label} (${it.class}) I just tapped on — bin, hazards, how to recycle it.`);
+                    return;
+                  }
+                }
+              }}
+              className="absolute inset-0 w-full h-full cursor-pointer"
             />
             {!running && (
               <div className="absolute inset-0 grid place-items-center text-white/70 text-sm bg-black/40">
@@ -217,10 +236,16 @@ function LivePage() {
                 const dec = DECOMPOSITION[it.class];
                 const mat = MATERIALS[it.class];
                 const color = CLASS_COLORS[it.class];
+                const focused = i === activeIdx;
                 return (
-                  <div
+                  <button
                     key={i}
-                    className="rounded-xl border p-3 bg-card"
+                    type="button"
+                    onClick={() => {
+                      setActiveIdx(i);
+                      setFocusQuery(`Tell me specifically about the ${it.label} (${it.class}) — bin, hazards, how to recycle it.`);
+                    }}
+                    className={`w-full text-left rounded-xl border p-3 bg-card transition ${focused ? "ring-2 ring-primary" : "hover:bg-accent/30"}`}
                     style={{ borderLeft: `4px solid ${color}` }}
                   >
                     <div className="flex items-center gap-3">
@@ -236,28 +261,13 @@ function LivePage() {
                       </div>
                     </div>
                     <div className="mt-3 rounded-lg border bg-accent/30 p-2.5 text-xs space-y-1.5">
-                      <div>
-                        <span className="font-semibold text-primary">Material:</span>{" "}
-                        <span className="text-muted-foreground">{mat.composition}</span>
-                      </div>
-                      <div>
-                        <span className="font-semibold text-primary">How it's made:</span>{" "}
-                        <span className="text-muted-foreground">{mat.manufacturing}</span>
-                      </div>
-                      <div>
-                        <span className="font-semibold text-primary">Decomposes in:</span>{" "}
-                        <span className="text-muted-foreground">{dec.time}</span>
-                      </div>
-                      <div>
-                        <span className="font-semibold text-primary">Recycling method:</span>{" "}
-                        <span className="text-muted-foreground">{dec.method}</span>
-                      </div>
-                      <div>
-                        <span className="font-semibold text-primary">Becomes:</span>{" "}
-                        <span className="text-muted-foreground">{mat.recycledInto}</span>
-                      </div>
+                      <div><span className="font-semibold text-primary">Material:</span> <span className="text-muted-foreground">{mat.composition}</span></div>
+                      <div><span className="font-semibold text-primary">How it's made:</span> <span className="text-muted-foreground">{mat.manufacturing}</span></div>
+                      <div><span className="font-semibold text-primary">Decomposes in:</span> <span className="text-muted-foreground">{dec.time}</span></div>
+                      <div><span className="font-semibold text-primary">Recycling method:</span> <span className="text-muted-foreground">{dec.method}</span></div>
+                      <div><span className="font-semibold text-primary">Becomes:</span> <span className="text-muted-foreground">{mat.recycledInto}</span></div>
                     </div>
-                  </div>
+                  </button>
                 );
               })}
             </div>
@@ -266,14 +276,18 @@ function LivePage() {
       </div>
 
       {items.length > 0 && (
-        <NearbyDisposal wasteClass={items[0].class} />
+        <NearbyDisposal
+          wasteClass={items[Math.min(activeIdx, items.length - 1)].class}
+          detectionId={detectionIds[Math.min(activeIdx, detectionIds.length - 1)] ?? null}
+        />
       )}
 
       <EcoAssistant
         title="Live detection assistant"
+        focusQuery={focusQuery}
         context={
           items.length
-            ? `Currently in frame: ${items.map((i) => `${i.label} (${i.class})`).join(", ")}.`
+            ? `Currently in frame: ${items.map((i) => `${i.label} (${i.class})`).join(", ")}.${items[activeIdx] ? ` User focused on: ${items[activeIdx].label} (${items[activeIdx].class}).` : ""}`
             : undefined
         }
       />
