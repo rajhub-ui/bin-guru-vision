@@ -6,18 +6,23 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const SYSTEM = `You are a multi-object waste detector. Identify EVERY distinct waste item visible (return multiple items when present) and classify each into exactly one of: plastic, paper, metal, glass, organic, ewaste, cloth.
+const SYSTEM = `You are a multi-object waste detector. Identify EVERY distinct waste item visible (return multiple items when present) and classify each into exactly one of: plastic, paper, metal, glass, organic, ewaste, cloth, battery, hazardous, wood, rubber, medical.
 - plastic: bottles, packaging, plastic bags, polystyrene
 - paper: cardboard, newspaper, magazines, office paper
 - metal: aluminium cans, tin cans, foil, scrap metal
 - glass: bottles, jars, broken glass containers
 - organic: food scraps, plant matter, compostable
-- ewaste: phones, batteries, cables, circuit boards, light bulbs
+- ewaste: phones, cables, circuit boards, light bulbs, small electronics
 - cloth: clothing, fabric, towels, textiles, shoes
-Return ONLY valid JSON: {"items":[{"label":"<short object name>","class":"plastic|paper|metal|glass|organic|ewaste|cloth","confidence":0.0-1.0,"box":[x,y,w,h]}],"summary":"one short sentence"}.
+- battery: AA/AAA cells, button cells, power banks, car batteries, lithium-ion packs
+- hazardous: paint cans, solvents, pesticides, chemical bottles, aerosol cans
+- wood: planks, furniture scraps, wooden crates, untreated timber
+- rubber: tyres, rubber gaskets, rubber shoe soles, hoses
+- medical: syringes, blister packs, masks, gloves, vials, bandages
+Return ONLY valid JSON: {"items":[{"label":"<short object name>","class":"plastic|paper|metal|glass|organic|ewaste|cloth|battery|hazardous|wood|rubber|medical","confidence":0.0-1.0,"box":[x,y,w,h]}],"summary":"one short sentence"}.
 box MUST be provided as normalized 0..1 image coords [x,y,width,height] for each item so the UI can draw an AR overlay. If no waste visible, return items: [].`;
 
-type WasteClass = "plastic" | "paper" | "metal" | "glass" | "organic" | "ewaste" | "cloth";
+type WasteClass = "plastic" | "paper" | "metal" | "glass" | "organic" | "ewaste" | "cloth" | "battery" | "hazardous" | "wood" | "rubber" | "medical";
 
 type ClassifyResult = {
   items: Array<{
