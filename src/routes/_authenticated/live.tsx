@@ -130,14 +130,17 @@ function LivePage() {
         const res = await classifyCanvas(c);
         if (res.error || res.fallback) return; // silent fallback on busy AI
         setItems(res.items);
-        for (const it of res.items) {
-          logDetection({
-            source: "live",
-            predicted_class: it.class,
-            confidence: it.confidence,
-            carbon_grams: DISPOSAL[it.class].carbonGramsSaved,
-          });
-        }
+        const ids = await Promise.all(
+          res.items.map((it) =>
+            logDetection({
+              source: "live",
+              predicted_class: it.class,
+              confidence: it.confidence,
+              carbon_grams: DISPOSAL[it.class].carbonGramsSaved,
+            }),
+          ),
+        );
+        setDetectionIds(ids);
       } finally {
         setBusy(false);
       }
