@@ -14,13 +14,10 @@ export const Route = createFileRoute("/_authenticated/live")({
 
 // Distinct AR overlay color per class
 const CLASS_COLORS: Record<string, string> = {
-  plastic: "#38bdf8",
-  paper: "#f59e0b",
-  metal: "#94a3b8",
-  glass: "#34d399",
-  organic: "#84cc16",
-  ewaste: "#f43f5e",
-  cloth: "#a78bfa",
+  plastic: "#38bdf8", paper: "#f59e0b", metal: "#94a3b8", glass: "#34d399",
+  organic: "#84cc16", ewaste: "#f43f5e", cloth: "#a78bfa",
+  battery: "#ef4444", hazardous: "#dc2626", wood: "#a16207",
+  rubber: "#475569", medical: "#ec4899",
 };
 
 function LivePage() {
@@ -30,6 +27,9 @@ function LivePage() {
   const wrapRef = useRef<HTMLDivElement>(null);
   const [running, setRunning] = useState(false);
   const [items, setItems] = useState<DetectedItem[]>([]);
+  const [detectionIds, setDetectionIds] = useState<(string | null)[]>([]);
+  const [activeIdx, setActiveIdx] = useState<number>(0);
+  const [focusQuery, setFocusQuery] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const intervalRef = useRef<number | null>(null);
 
