@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Send, Mic, Volume2, Loader2, Sparkles } from "lucide-react";
+import { Send, Mic, Volume2, VolumeX, Loader2, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import ReactMarkdown from "react-markdown";
@@ -9,31 +9,54 @@ import { toast } from "sonner";
 type Msg = { role: "user" | "assistant"; content: string };
 const FN_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/eco-chat`;
 
+export interface EcoAssistantProps {
+  context?: string;
+  title?: string;
+  subtitle?: string;
+  /** When this value changes, the assistant auto-asks about it. Use for "click on bounding box → focus" */
+  focusQuery?: string | null;
+}
+
 export function EcoAssistant({
   context,
   title = "Ask the eco assistant",
   subtitle = "Get instant help about your detection.",
-}: {
-  context?: string;
-  title?: string;
-  subtitle?: string;
-}) {
+  focusQuery,
+}: EcoAssistantProps) {
   const [messages, setMessages] = useState<Msg[]>([
-    { role: "assistant", content: "Hi! Ask me anything about this detection — bin choice, recycling tips, hazards." },
+    { role: "assistant", content: "Hi! Ask me anything about this detection — bin choice, recycling tips, hazards. Tip: click any bounding box to ask about that specific item." },
   ]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [listening, setListening] = useState(false);
+  const [speakingIdx, setSpeakingIdx] = useState<number | null>(null);
   const recogRef = useRef<any>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const lastFocusRef = useRef<string | null>(null);
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
   }, [messages]);
 
-  const speak = (text: string) => {
+  const stopSpeak = () => {
+    if (typeof window !== "undefined" && window.speechSynthesis) {
+      window.speechSynthesis.cancel();
+    }
+    setSpeakingIdx(null);
+  };
+
+  const speak = (text: string, idx: number) => {
     if (typeof window === "undefined" || !window.speechSynthesis) return;
-    const u = new SpeechSynthesisUtterance(text);
+    window.speechSynthesis.cancel();
+    if (speakingIdx === idx) {
+      setSpeakingIdx(null);
+      return;
+    }
+    const u = new SpeechSynthesisUtterance(text.replace(/[*_`#>]/g, ""));
+    u.onend = () => setSpeakingIdx(null);
+    u.onerror = () => setSpeakingIdx(null);
+    setSpeakingIdx(idx);
     window.speechSynthesis.speak(u);
   };
 
@@ -120,6 +143,15 @@ export function EcoAssistant({
     }
   };
 
+  // When the user clicks a bounding box, focus the assistant and auto-ask
+  useEffect(() => {
+    if (!focusQuery || focusQuery === lastFocusRef.current) return;
+    lastFocusRef.current = focusQuery;
+    containerRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    send(focusQuery);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [focusQuery]);
+
   const quick = [
     "Which bin should this go in?",
     "Is this hazardous?",
@@ -127,7 +159,7 @@ export function EcoAssistant({
   ];
 
   return (
-    <section className="glass rounded-2xl p-5 mt-8 soft-shadow">
+    <section ref={containerRef} className="glass rounded-2xl p-5 mt-8 soft-shadow">
       <header className="flex items-center gap-2 mb-3">
         <div className="grid h-8 w-8 place-items-center rounded-lg bg-[var(--gradient-primary)] text-primary-foreground">
           <Sparkles className="h-4 w-4" />
@@ -138,22 +170,26 @@ export function EcoAssistant({
         </div>
       </header>
 
-      <div ref={scrollRef} className="max-h-72 overflow-y-auto space-y-2 pr-1 mb-3">
+      <div ref={scrollRef} className="max-h-72 overflow-y-auto space-y-3 pr-1 mb-3">
         {messages.map((m, i) => (
-          <div key={i} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
-            <div className={`max-w-[85%] rounded-2xl px-3 py-2 text-sm ${m.role === "user" ? "bg-primary text-primary-foreground" : "bg-card border"}`}>
+          <div key={i} className={`flex items-start gap-2 ${m.role === "user" ? "justify-end" : "justify-start"}`}>
+            <div className={`max-w-[80%] rounded-2xl px-3 py-2 text-sm ${m.role === "user" ? "bg-primary text-primary-foreground" : "bg-card border"}`}>
               <div className="prose prose-sm dark:prose-invert max-w-none">
                 <ReactMarkdown>{m.content || "…"}</ReactMarkdown>
               </div>
-              {m.role === "assistant" && m.content && (
-                <button
-                  onClick={() => speak(m.content)}
-                  className="mt-1 text-xs opacity-60 hover:opacity-100 inline-flex items-center gap-1"
-                >
-                  <Volume2 className="h-3 w-3" /> replay
-                </button>
-              )}
             </div>
+            {m.role === "assistant" && m.content && (
+              <Button
+                size="icon"
+                variant={speakingIdx === i ? "default" : "outline"}
+                className="h-10 w-10 shrink-0 rounded-full"
+                onClick={() => speak(m.content, i)}
+                aria-label={speakingIdx === i ? "Stop speaking" : "Listen to answer"}
+                title={speakingIdx === i ? "Stop" : "Listen"}
+              >
+                {speakingIdx === i ? <VolumeX className="h-5 w-5" /> : <Volume2 className="h-5 w-5" />}
+              </Button>
+            )}
           </div>
         ))}
         {loading && (
@@ -174,6 +210,14 @@ export function EcoAssistant({
             {q}
           </button>
         ))}
+        {speakingIdx !== null && (
+          <button
+            onClick={stopSpeak}
+            className="text-xs px-3 py-1 rounded-full border bg-destructive/10 text-destructive hover:bg-destructive/20 transition-colors"
+          >
+            Stop voice
+          </button>
+        )}
       </div>
 
       <div className="flex gap-2">
