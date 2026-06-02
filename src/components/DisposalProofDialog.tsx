@@ -1,7 +1,7 @@
 import { useRef, useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Camera, Loader2, Sparkles, Upload } from "lucide-react";
+import { Camera, Loader2, Sparkles, Upload, ShieldAlert } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import type { RRCentre } from "@/lib/rrnagar-centres";
@@ -13,14 +13,31 @@ export interface DisposalProofDialogProps {
   onOpenChange: (v: boolean) => void;
   centre: RRCentre | null;
   wasteClass: WasteClass | null;
+  detectionId?: string | null;
   onAwarded?: (points: number) => void;
 }
 
-export function DisposalProofDialog({ open, onOpenChange, centre, wasteClass, onAwarded }: DisposalProofDialogProps) {
+const VERIFY_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/verify-proof`;
+
+function fileToBase64(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const r = new FileReader();
+    r.onload = () => {
+      const result = r.result as string;
+      resolve(result.split(",")[1]);
+    };
+    r.onerror = reject;
+    r.readAsDataURL(file);
+  });
+}
+
+export function DisposalProofDialog({ open, onOpenChange, centre, wasteClass, detectionId, onAwarded }: DisposalProofDialogProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
-  const [uploading, setUploading] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [stage, setStage] = useState<string>("");
+  const [rejectReason, setRejectReason] = useState<string | null>(null);
 
   const points = wasteClass ? ecoPointsForClass(wasteClass) : 25;
 
@@ -28,23 +45,70 @@ export function DisposalProofDialog({ open, onOpenChange, centre, wasteClass, on
     if (!f) return;
     setFile(f);
     setPreview(URL.createObjectURL(f));
+    setRejectReason(null);
   };
 
   const reset = () => {
     setFile(null);
     setPreview(null);
-    setUploading(false);
+    setBusy(false);
+    setStage("");
+    setRejectReason(null);
   };
 
   const submit = async () => {
     if (!file || !centre) return;
-    setUploading(true);
+    setBusy(true);
+    setRejectReason(null);
     try {
       const { data: { user } } = await supabase.auth.getUser();
+      const { data: { session } } = await supabase.auth.getSession();
       if (!user) {
         toast.error("Please sign in to claim eco-points.");
         return;
       }
+
+      // Prevent duplicate claim for the same detection
+      if (detectionId) {
+        const { data: existing } = await supabase
+          .from("disposal_proofs")
+          .select("id")
+          .eq("user_id", user.id)
+          .eq("detection_id", detectionId)
+          .maybeSingle();
+        if (existing) {
+          toast.error("Eco-points already claimed for this detection.");
+          setBusy(false);
+          return;
+        }
+      }
+
+      // 1) AI verification
+      setStage("Verifying photo with AI…");
+      const base64 = await fileToBase64(file);
+      const vRes = await fetch(VERIFY_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+          ...(session ? { Authorization: `Bearer ${session.access_token}` } : {}),
+        },
+        body: JSON.stringify({
+          imageBase64: base64,
+          mimeType: file.type || "image/jpeg",
+          wasteClass,
+          centreName: centre.name,
+        }),
+      });
+      const v = await vRes.json().catch(() => ({ valid: false, reason: "Bad verifier response." }));
+      if (!v.valid) {
+        setRejectReason(v.reason || "Photo did not pass verification. Please retake clearly showing the waste in the bin at the centre.");
+        setBusy(false);
+        return;
+      }
+
+      // 2) Upload
+      setStage("Uploading proof…");
       const ext = (file.name.split(".").pop() || "jpg").toLowerCase();
       const path = `${user.id}/${crypto.randomUUID()}.${ext}`;
       const up = await supabase.storage.from("disposal-proofs").upload(path, file, {
@@ -52,16 +116,25 @@ export function DisposalProofDialog({ open, onOpenChange, centre, wasteClass, on
       });
       if (up.error) throw up.error;
 
+      // 3) Insert (unique index prevents duplicates server-side too)
+      setStage("Awarding eco-points…");
       const { error: insErr } = await supabase.from("disposal_proofs").insert({
         user_id: user.id,
+        detection_id: detectionId ?? null,
         centre_id: centre.id,
         centre_name: centre.name,
         image_path: path,
         eco_points_awarded: points,
       });
-      if (insErr) throw insErr;
+      if (insErr) {
+        if (insErr.code === "23505") {
+          toast.error("Eco-points already claimed for this detection.");
+          return;
+        }
+        throw insErr;
+      }
 
-      // Increment eco_score
+      // 4) Increment eco_score
       const { data: profile } = await supabase
         .from("profiles")
         .select("eco_score")
@@ -75,16 +148,17 @@ export function DisposalProofDialog({ open, onOpenChange, centre, wasteClass, on
       }
 
       toast.success(`🎉 +${points} eco-points awarded!`, {
-        description: `Thanks for disposing at ${centre.name}.`,
+        description: `Verified disposal at ${centre.name}.`,
       });
       onAwarded?.(points);
       onOpenChange(false);
       reset();
     } catch (e) {
       console.error(e);
-      toast.error("Could not upload proof. Please try again.");
+      toast.error("Could not submit proof. Please try again.");
     } finally {
-      setUploading(false);
+      setBusy(false);
+      setStage("");
     }
   };
 
@@ -104,7 +178,7 @@ export function DisposalProofDialog({ open, onOpenChange, centre, wasteClass, on
           </DialogTitle>
           <DialogDescription>
             {centre ? (
-              <>Snap or upload a photo of the waste in the bin at <b>{centre.name}</b>. You'll earn <b>+{points} eco-points</b>.</>
+              <>Photo must clearly show the <b>{wasteClass ?? "waste"}</b> being dropped into the bin at <b>{centre.name}</b>. Verified photos earn <b>+{points} eco-points</b>.</>
             ) : (
               "Snap or upload a photo of the waste in the bin."
             )}
@@ -112,7 +186,7 @@ export function DisposalProofDialog({ open, onOpenChange, centre, wasteClass, on
         </DialogHeader>
 
         <div
-          onClick={() => inputRef.current?.click()}
+          onClick={() => !busy && inputRef.current?.click()}
           className="rounded-xl border-2 border-dashed p-4 min-h-[180px] grid place-items-center cursor-pointer hover:bg-accent/40 transition"
         >
           <input
@@ -133,20 +207,36 @@ export function DisposalProofDialog({ open, onOpenChange, centre, wasteClass, on
           )}
         </div>
 
+        {rejectReason && (
+          <div className="rounded-lg border border-destructive/40 bg-destructive/10 p-3 text-sm flex gap-2">
+            <ShieldAlert className="h-4 w-4 text-destructive shrink-0 mt-0.5" />
+            <div>
+              <div className="font-semibold text-destructive">Photo rejected</div>
+              <div className="text-muted-foreground">{rejectReason}</div>
+            </div>
+          </div>
+        )}
+
+        {busy && stage && (
+          <div className="text-xs text-muted-foreground flex items-center gap-2">
+            <Loader2 className="h-3 w-3 animate-spin" /> {stage}
+          </div>
+        )}
+
         <DialogFooter className="gap-2">
-          <Button variant="ghost" onClick={() => onOpenChange(false)} disabled={uploading}>
+          <Button variant="ghost" onClick={() => onOpenChange(false)} disabled={busy}>
             Cancel
           </Button>
           <Button
             onClick={submit}
-            disabled={!file || uploading}
+            disabled={!file || busy}
             style={{ background: "var(--gradient-primary)" }}
             className="text-primary-foreground"
           >
-            {uploading ? (
-              <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Uploading…</>
+            {busy ? (
+              <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Working…</>
             ) : (
-              <><Upload className="h-4 w-4 mr-2" /> Submit & claim +{points}</>
+              <><Upload className="h-4 w-4 mr-2" /> Verify & claim +{points}</>
             )}
           </Button>
         </DialogFooter>
