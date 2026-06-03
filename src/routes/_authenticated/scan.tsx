@@ -323,14 +323,6 @@ function ScanPage() {
         <NearbyDisposal wasteClass={activeItem.class} detectionId={activeDetectionId} />
       )}
 
-      <EcoAssistant
-        focusQuery={focusQuery}
-        context={
-          items && items.length
-            ? `Detected items: ${items.map((i) => `${i.label} (${i.class})`).join(", ")}.${hazard ? ` Hazard level: ${hazard.level}.` : ""}${activeItem ? ` User is currently focused on: ${activeItem.label} (${activeItem.class}).` : ""}`
-            : undefined
-        }
-      />
     </div>
   );
 }

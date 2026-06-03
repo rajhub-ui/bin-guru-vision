@@ -282,15 +282,6 @@ function LivePage() {
         />
       )}
 
-      <EcoAssistant
-        title="Live detection assistant"
-        focusQuery={focusQuery}
-        context={
-          items.length
-            ? `Currently in frame: ${items.map((i) => `${i.label} (${i.class})`).join(", ")}.${items[activeIdx] ? ` User focused on: ${items[activeIdx].label} (${items[activeIdx].class}).` : ""}`
-            : undefined
-        }
-      />
     </div>
   );
 }
