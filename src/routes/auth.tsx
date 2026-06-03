@@ -73,6 +73,39 @@ function AuthPage() {
     router.navigate({ to: "/dashboard" });
   };
 
+  const oauth = async (provider: "google" | "apple") => {
+    setLoading(true);
+    const result = await lovable.auth.signInWithOAuth(provider, {
+      redirect_uri: `${window.location.origin}/dashboard`,
+    });
+    if (result.error) {
+      setLoading(false);
+      return toast.error(result.error.message ?? "Sign-in failed");
+    }
+    if (result.redirected) return;
+    setLoading(false);
+    router.navigate({ to: "/dashboard" });
+  };
+
+  const SocialButtons = () => (
+    <div className="space-y-3">
+      <div className="grid grid-cols-2 gap-3">
+        <Button type="button" variant="outline" disabled={loading} onClick={() => oauth("google")} className="w-full">
+          <GoogleIcon className="h-4 w-4 mr-2" /> Google
+        </Button>
+        <Button type="button" variant="outline" disabled={loading} onClick={() => oauth("apple")} className="w-full">
+          <Apple className="h-4 w-4 mr-2" /> Apple
+        </Button>
+      </div>
+      <div className="relative">
+        <div className="absolute inset-0 flex items-center"><span className="w-full border-t" /></div>
+        <div className="relative flex justify-center text-xs uppercase">
+          <span className="bg-background px-2 text-muted-foreground">or continue with email</span>
+        </div>
+      </div>
+    </div>
+  );
+
   return (
     <div className="min-h-screen grid lg:grid-cols-2">
       <div className="hidden lg:flex flex-col justify-between p-12 relative overflow-hidden" style={{ background: "var(--gradient-hero)" }}>
