@@ -33,7 +33,7 @@ function ScanPage() {
   const [summary, setSummary] = useState("");
   const [hazard, setHazard] = useState<HazardInfo | null>(null);
   const [loading, setLoading] = useState(false);
-  const [focusQuery, setFocusQuery] = useState<string | null>(null);
+  const askEco = (q: string) => window.dispatchEvent(new CustomEvent("eco-assistant:ask", { detail: q }));
   const [activeIdx, setActiveIdx] = useState<number>(0);
 
   const onFile = async (file: File) => {
@@ -323,14 +323,6 @@ function ScanPage() {
         <NearbyDisposal wasteClass={activeItem.class} detectionId={activeDetectionId} />
       )}
 
-      <EcoAssistant
-        focusQuery={focusQuery}
-        context={
-          items && items.length
-            ? `Detected items: ${items.map((i) => `${i.label} (${i.class})`).join(", ")}.${hazard ? ` Hazard level: ${hazard.level}.` : ""}${activeItem ? ` User is currently focused on: ${activeItem.label} (${activeItem.class}).` : ""}`
-            : undefined
-        }
-      />
     </div>
   );
 }
