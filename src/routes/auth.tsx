@@ -172,6 +172,7 @@ function AuthPage() {
             <TabsContent value="signup">
               <form onSubmit={signUp} className="glass rounded-2xl p-6 mt-4 space-y-4 soft-shadow">
                 <h1 className="text-2xl font-bold">Create your account</h1>
+                <SocialButtons />
                 <div className="space-y-2">
                   <Label htmlFor="name-up">Display name</Label>
                   <Input id="name-up" value={name} onChange={(e) => setName(e.target.value)} placeholder="Eco warrior" />
