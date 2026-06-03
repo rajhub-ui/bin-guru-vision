@@ -213,6 +213,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      award_badge: { Args: { _slug: string }; Returns: boolean }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -220,6 +221,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      increment_eco_score: { Args: { delta: number }; Returns: number }
     }
     Enums: {
       app_role: "admin" | "user"
