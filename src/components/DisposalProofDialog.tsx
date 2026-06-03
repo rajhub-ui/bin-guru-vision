@@ -134,18 +134,8 @@ export function DisposalProofDialog({ open, onOpenChange, centre, wasteClass, de
         throw insErr;
       }
 
-      // 4) Increment eco_score
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("eco_score")
-        .eq("id", user.id)
-        .maybeSingle();
-      if (profile) {
-        await supabase
-          .from("profiles")
-          .update({ eco_score: (profile.eco_score ?? 0) + points })
-          .eq("id", user.id);
-      }
+      // 4) Increment eco_score via server-validated RPC
+      await supabase.rpc("increment_eco_score", { delta: points });
 
       toast.success(`🎉 +${points} eco-points awarded!`, {
         description: `Verified disposal at ${centre.name}.`,
