@@ -124,6 +124,14 @@ function VideoPage() {
         </div>
       )}
 
+      <EcoAssistant
+        title="Video analysis assistant"
+        context={
+          Object.keys(counts).length
+            ? `Aggregate detections from video: ${Object.entries(counts).map(([c, n]) => `${DISPOSAL[c as WasteClass].label}: ${n}`).join(", ")}.`
+            : undefined
+        }
+      />
     </div>
   );
 }

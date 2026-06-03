@@ -320,6 +320,10 @@ function PdfPage() {
         </>
       )}
 
+      <EcoAssistant
+        title="PDF analysis assistant"
+        context="The user analyzed a PDF document for waste items. Help them understand disposal and recycling for items found across pages."
+      />
     </div>
   );
 }
