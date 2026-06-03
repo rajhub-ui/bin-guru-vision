@@ -47,12 +47,17 @@ export function EcoAssistantFAB() {
   };
 
   const startMic = () => {
-    const SR = (window as unknown as { webkitSpeechRecognition?: new () => SpeechRecognition; SpeechRecognition?: new () => SpeechRecognition }).webkitSpeechRecognition || (window as unknown as { SpeechRecognition?: new () => SpeechRecognition }).SpeechRecognition;
+    const w = window as unknown as { webkitSpeechRecognition?: new () => unknown; SpeechRecognition?: new () => unknown };
+    const SR = w.webkitSpeechRecognition || w.SpeechRecognition;
     if (!SR) return toast.error("Speech recognition not supported in this browser.");
-    const r = new SR();
+    const r = new SR() as {
+      lang: string; interimResults: boolean; start: () => void;
+      onresult: (e: { results: { [k: number]: { [k: number]: { transcript: string } } } }) => void;
+      onerror: () => void; onend: () => void;
+    };
     r.lang = "en-US";
     r.interimResults = false;
-    r.onresult = (e: SpeechRecognitionEvent) => {
+    r.onresult = (e) => {
       setInput(e.results[0][0].transcript);
       setListening(false);
     };
