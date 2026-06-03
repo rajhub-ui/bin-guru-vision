@@ -29,7 +29,7 @@ function LivePage() {
   const [items, setItems] = useState<DetectedItem[]>([]);
   const [detectionIds, setDetectionIds] = useState<(string | null)[]>([]);
   const [activeIdx, setActiveIdx] = useState<number>(0);
-  const [focusQuery, setFocusQuery] = useState<string | null>(null);
+  const askEco = (q: string) => window.dispatchEvent(new CustomEvent("eco-assistant:ask", { detail: q }));
   const [busy, setBusy] = useState(false);
   const intervalRef = useRef<number | null>(null);
 

@@ -33,7 +33,7 @@ function ScanPage() {
   const [summary, setSummary] = useState("");
   const [hazard, setHazard] = useState<HazardInfo | null>(null);
   const [loading, setLoading] = useState(false);
-  const [focusQuery, setFocusQuery] = useState<string | null>(null);
+  const askEco = (q: string) => window.dispatchEvent(new CustomEvent("eco-assistant:ask", { detail: q }));
   const [activeIdx, setActiveIdx] = useState<number>(0);
 
   const onFile = async (file: File) => {
