@@ -32,6 +32,20 @@ export function EcoAssistantFAB() {
     if (open) setTimeout(() => inputRef.current?.focus(), 200);
   }, [open]);
 
+  // Allow other components to ask the assistant directly.
+  // Usage: window.dispatchEvent(new CustomEvent("eco-assistant:ask", { detail: "question here" }))
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const detail = (e as CustomEvent<string>).detail;
+      if (!detail) return;
+      setOpen(true);
+      setTimeout(() => void send(detail), 250);
+    };
+    window.addEventListener("eco-assistant:ask", handler);
+    return () => window.removeEventListener("eco-assistant:ask", handler);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const speak = (text: string, idx: number) => {
     if (typeof window === "undefined" || !window.speechSynthesis) return;
     window.speechSynthesis.cancel();
