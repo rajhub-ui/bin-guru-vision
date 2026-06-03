@@ -141,6 +141,7 @@ function AuthPage() {
             <TabsContent value="signin">
               <form onSubmit={signIn} className="glass rounded-2xl p-6 mt-4 space-y-4 soft-shadow">
                 <h1 className="text-2xl font-bold">Welcome back</h1>
+                <SocialButtons />
                 <div className="space-y-2">
                   <Label htmlFor="email-in">Email</Label>
                   <Input id="email-in" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
