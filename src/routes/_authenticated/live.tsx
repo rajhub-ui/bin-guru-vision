@@ -312,3 +312,18 @@ function LivePage() {
     </div>
   );
 }
+
+function CornerCrosshair({ className = "" }: { className?: string }) {
+  return (
+    <span
+      aria-hidden
+      className={`pointer-events-none absolute h-6 w-6 ${className}`}
+      style={{
+        borderTop: "2px solid #00E676",
+        borderLeft: "2px solid #00E676",
+        boxShadow: "0 0 10px rgba(0,230,118,0.6)",
+      }}
+    />
+  );
+}
+
