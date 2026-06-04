@@ -1,15 +1,22 @@
 import { useEffect } from "react";
-import { MapContainer, TileLayer, Marker, Popup, Circle, useMap } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { Recycle } from "lucide-react";
 
-// Fix default marker icon paths (Leaflet quirk under bundlers)
-delete (L.Icon.Default.prototype as unknown as { _getIconUrl?: unknown })._getIconUrl;
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
-  iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
-  shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+// Custom pulsing eco-pin (rendered via divIcon so we can apply our CSS).
+const ecoPinIcon = L.divIcon({
+  className: "eco-pin-wrap",
+  html: `<span class="eco-pin"></span>`,
+  iconSize: [18, 18],
+  iconAnchor: [9, 9],
+});
+
+const userPinIcon = L.divIcon({
+  className: "eco-pin-wrap",
+  html: `<span class="eco-pin eco-pin-user"></span>`,
+  iconSize: [18, 18],
+  iconAnchor: [9, 9],
 });
 
 export interface MapPlace {
@@ -30,15 +37,17 @@ function Recenter({ pos }: { pos: [number, number] }) {
 
 export default function DisposalMap({ pos, places }: { pos: [number, number]; places: MapPlace[] }) {
   return (
-    <MapContainer center={pos} zoom={11} style={{ height: "100%", width: "100%" }}>
-      <TileLayer attribution="&copy; OpenStreetMap" url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+    <MapContainer center={pos} zoom={11} style={{ height: "100%", width: "100%" }} zoomControl={false}>
+      <TileLayer
+        attribution="&copy; OpenStreetMap &copy; CARTO"
+        url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
+      />
       <Recenter pos={pos} />
-      <Marker position={pos}>
+      <Marker position={pos} icon={userPinIcon}>
         <Popup>You are here</Popup>
       </Marker>
-      <Circle center={pos} radius={15000} pathOptions={{ color: "#2d8a9e", fillOpacity: 0.04 }} />
       {places.map((p) => (
-        <Marker key={p.id} position={[p.lat, p.lon]}>
+        <Marker key={p.id} position={[p.lat, p.lon]} icon={ecoPinIcon}>
           <Popup>
             <div className="text-sm">
               <div className="font-semibold flex items-center gap-1">
