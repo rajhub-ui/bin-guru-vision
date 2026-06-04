@@ -36,7 +36,7 @@ export default function DisposalMap({ pos, places }: { pos: [number, number]; pl
       <Marker position={pos}>
         <Popup>You are here</Popup>
       </Marker>
-      <Circle center={pos} radius={1500} pathOptions={{ color: "#2d8a9e", fillOpacity: 0.06 }} />
+      <Circle center={pos} radius={15000} pathOptions={{ color: "#2d8a9e", fillOpacity: 0.04 }} />
       {places.map((p) => (
         <Marker key={p.id} position={[p.lat, p.lon]}>
           <Popup>
