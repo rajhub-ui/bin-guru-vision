@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState, type ComponentType } from "react";
 import { MapPin, Navigation, Upload, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { RR_CENTRES, RNSIT_POS, centresForClass, type RRCentre } from "@/lib/rrnagar-centres";
+import { RR_CENTRES, BENGALURU_POS, centresForClass, type RRCentre } from "@/lib/rrnagar-centres";
 import type { WasteClass } from "@/lib/disposal";
 import type { MapPlace } from "@/components/DisposalMap";
 import { DisposalProofDialog } from "@/components/DisposalProofDialog";
