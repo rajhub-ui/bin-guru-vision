@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState, type ComponentType } from "react";
 import { MapPin, Navigation, Upload, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { RR_CENTRES, RNSIT_POS, centresForClass, type RRCentre } from "@/lib/rrnagar-centres";
+import { RR_CENTRES, BENGALURU_POS, centresForClass, type RRCentre } from "@/lib/rrnagar-centres";
 import type { WasteClass } from "@/lib/disposal";
 import type { MapPlace } from "@/components/DisposalMap";
 import { DisposalProofDialog } from "@/components/DisposalProofDialog";
@@ -25,7 +25,7 @@ export interface NearbyDisposalProps {
 }
 
 export function NearbyDisposal({ wasteClass, compact = false, detectionId }: NearbyDisposalProps) {
-  const [pos, setPos] = useState<[number, number]>(RNSIT_POS);
+  const [pos, setPos] = useState<[number, number]>(BENGALURU_POS);
   const [MapComp, setMapComp] = useState<DisposalMapType | null>(null);
   const [proofOpen, setProofOpen] = useState(false);
   const [activeCentre, setActiveCentre] = useState<RRCentre | null>(null);

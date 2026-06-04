@@ -10,14 +10,15 @@ export interface RRCentre {
   accepts: WasteClass[];
 }
 
-// Default map centre — Bengaluru city centre (MG Road area).
-export const RNSIT_POS: [number, number] = [12.9716, 77.5946];
+// Bengaluru city centre (approx. MG Road / Cubbon Park).
+export const BENGALURU_POS: [number, number] = [12.9716, 77.5946];
+// Backwards-compat alias.
+export const RNSIT_POS = BENGALURU_POS;
 
-// Curated waste-disposal centres across Bengaluru. Mix of BBMP dry-waste
-// centres, certified e-waste recyclers, organic composting hubs, scrap dealers
-// and hazardous/biomedical drop-offs.
+// Hand-picked waste disposal centres across Bengaluru — covering all major zones
+// (Central, North, South, East, West, Whitefield, Electronic City, Yelahanka, etc.).
 export const RR_CENTRES: RRCentre[] = [
-  // --- West Bengaluru / RR Nagar belt ---
+  // ===== West Bengaluru / RR Nagar =====
   {
     id: "bbmp-rrnagar",
     name: "BBMP Dry Waste Collection Centre — RR Nagar",
@@ -38,15 +39,143 @@ export const RR_CENTRES: RRCentre[] = [
     id: "saahas-channasandra",
     name: "Saahas Zero Waste Hub — Channasandra",
     lat: 12.932, lon: 77.488,
-    type: "Recycling / Hazardous",
+    type: "Recycling / Hazardous / Medical",
     address: "Channasandra Main Rd",
     accepts: ["plastic", "paper", "glass", "ewaste", "cloth", "hazardous", "medical", "battery"],
   },
+  // ===== Central Bengaluru =====
+  {
+    id: "bbmp-shivajinagar",
+    name: "BBMP Dry Waste Centre — Shivajinagar",
+    lat: 12.9852, lon: 77.6055,
+    type: "Recycling",
+    address: "Shivajinagar",
+    accepts: ["plastic", "paper", "metal", "glass", "cloth"],
+  },
+  {
+    id: "hasiru-dala-cbd",
+    name: "Hasiru Dala MRF — Cubbon Park area",
+    lat: 12.9763, lon: 77.5929,
+    type: "Recycling / Composting",
+    address: "Near Cubbon Park",
+    accepts: ["plastic", "paper", "metal", "glass", "organic", "cloth"],
+  },
+  // ===== South Bengaluru =====
+  {
+    id: "bbmp-jayanagar",
+    name: "BBMP Dry Waste Centre — Jayanagar 4th Block",
+    lat: 12.9279, lon: 77.5831,
+    type: "Recycling",
+    address: "Jayanagar 4th Block",
+    accepts: ["plastic", "paper", "metal", "glass", "cloth", "wood"],
+  },
+  {
+    id: "eparisaraa-btm",
+    name: "E-Parisaraa E-Waste Drop-off — BTM Layout",
+    lat: 12.9166, lon: 77.6101,
+    type: "E-waste / Battery",
+    address: "BTM Layout 2nd Stage",
+    accepts: ["ewaste", "battery", "hazardous"],
+  },
+  {
+    id: "kspcb-jpnagar",
+    name: "KSPCB Hazardous Waste Drop — JP Nagar",
+    lat: 12.9081, lon: 77.5851,
+    type: "Hazardous / Medical",
+    address: "JP Nagar 6th Phase",
+    accepts: ["hazardous", "medical", "battery", "ewaste"],
+  },
+  // ===== North Bengaluru =====
+  {
+    id: "bbmp-hebbal",
+    name: "BBMP Dry Waste Centre — Hebbal",
+    lat: 13.0359, lon: 77.5970,
+    type: "Recycling",
+    address: "Hebbal",
+    accepts: ["plastic", "paper", "metal", "glass", "cloth"],
+  },
+  {
+    id: "yelahanka-compost",
+    name: "Yelahanka Compost & Organic Hub",
+    lat: 13.1007, lon: 77.5963,
+    type: "Compost",
+    address: "Yelahanka New Town",
+    accepts: ["organic", "paper", "wood"],
+  },
+  // ===== East Bengaluru / Whitefield =====
+  {
+    id: "bbmp-whitefield",
+    name: "BBMP Dry Waste Centre — Whitefield",
+    lat: 12.9698, lon: 77.7500,
+    type: "Recycling",
+    address: "Whitefield Main Rd",
+    accepts: ["plastic", "paper", "metal", "glass", "cloth", "wood", "rubber"],
+  },
+  {
+    id: "saahas-mahadevapura",
+    name: "Saahas Zero Waste — Mahadevapura",
+    lat: 12.9959, lon: 77.6974,
+    type: "Recycling / Hazardous / Medical",
+    address: "Mahadevapura",
+    accepts: ["plastic", "paper", "glass", "ewaste", "cloth", "hazardous", "medical", "battery"],
+  },
+  {
+    id: "marathahalli-ewaste",
+    name: "E-Waste Collection Point — Marathahalli",
+    lat: 12.9591, lon: 77.6974,
+    type: "E-waste / Battery",
+    address: "Marathahalli Bridge",
+    accepts: ["ewaste", "battery"],
+  },
+  // ===== Electronic City / South-East =====
+  {
+    id: "ecity-ewaste",
+    name: "Electronic City E-Waste Hub",
+    lat: 12.8452, lon: 77.6602,
+    type: "E-waste / Battery / Metal",
+    address: "Electronic City Phase 1",
+    accepts: ["ewaste", "battery", "metal", "plastic"],
+  },
+  {
+    id: "ecity-compost",
+    name: "Electronic City Compost Yard",
+    lat: 12.8389, lon: 77.6772,
+    type: "Compost",
+    address: "Electronic City Phase 2",
+    accepts: ["organic", "paper", "wood"],
+  },
+  // ===== HSR / Koramangala =====
+  {
+    id: "bbmp-hsr",
+    name: "BBMP Dry Waste Centre — HSR Layout",
+    lat: 12.9116, lon: 77.6446,
+    type: "Recycling",
+    address: "HSR Layout Sector 2",
+    accepts: ["plastic", "paper", "metal", "glass", "cloth"],
+  },
+  {
+    id: "koramangala-scrap",
+    name: "Koramangala Scrap & Metal Recycler",
+    lat: 12.9352, lon: 77.6245,
+    type: "Metal / Scrap / Rubber",
+    address: "Koramangala 5th Block",
+    accepts: ["metal", "ewaste", "rubber", "wood"],
+  },
+  // ===== North-West / Peenya =====
+  {
+    id: "peenya-scrap",
+    name: "Peenya Industrial Scrap Hub",
+    lat: 13.0289, lon: 77.5217,
+    type: "Metal / Scrap / Hazardous",
+    address: "Peenya Industrial Area",
+    accepts: ["metal", "ewaste", "rubber", "wood", "hazardous", "battery"],
+  },
+  // ===== West / BEML / Ullal =====
   {
     id: "beml-scrap",
     name: "BEML Layout Scrap & Metal Recycler",
     lat: 12.905, lon: 77.492,
-    type: "Metal / Scrap",
+    type: "Metal / Scrap / Rubber",
     address: "BEML Layout, 5th Stage, RR Nagar",
     accepts: ["metal", "ewaste", "rubber", "wood"],
   },
@@ -58,135 +187,14 @@ export const RR_CENTRES: RRCentre[] = [
     address: "Ullal Main Rd",
     accepts: ["organic", "paper", "wood"],
   },
-
-  // --- South Bengaluru ---
+  // ===== Indiranagar / CV Raman Nagar =====
   {
-    id: "bbmp-jayanagar",
-    name: "BBMP Dry Waste Centre — Jayanagar 4th Block",
-    lat: 12.9250, lon: 77.5938,
-    type: "Recycling",
-    address: "Jayanagar 4th Block",
-    accepts: ["plastic", "paper", "metal", "glass", "cloth"],
-  },
-  {
-    id: "hsr-compost",
-    name: "HSR Layout Composting Centre",
-    lat: 12.9116, lon: 77.6473,
-    type: "Compost",
-    address: "HSR Layout, Sector 6",
-    accepts: ["organic", "paper", "wood"],
-  },
-  {
-    id: "btm-scrap",
-    name: "BTM Scrap & Metal Recycler",
-    lat: 12.9166, lon: 77.6101,
-    type: "Metal / Scrap",
-    address: "BTM 2nd Stage",
-    accepts: ["metal", "ewaste", "rubber", "wood", "plastic"],
-  },
-  {
-    id: "bannerghatta-haz",
-    name: "Bannerghatta Hazardous Waste Drop-off",
-    lat: 12.8853, lon: 77.5970,
-    type: "Hazardous",
-    address: "Bannerghatta Rd, near IIM-B",
-    accepts: ["hazardous", "medical", "battery", "ewaste"],
-  },
-
-  // --- East Bengaluru ---
-  {
-    id: "bbmp-indiranagar",
+    id: "indiranagar-dwcc",
     name: "BBMP Dry Waste Centre — Indiranagar",
     lat: 12.9719, lon: 77.6412,
     type: "Recycling",
-    address: "100 Ft Rd, Indiranagar",
+    address: "Indiranagar 100ft Rd",
     accepts: ["plastic", "paper", "metal", "glass", "cloth"],
-  },
-  {
-    id: "ewaste-whitefield",
-    name: "E-Waste Recyclers India — Whitefield",
-    lat: 12.9698, lon: 77.7499,
-    type: "E-waste / Battery",
-    address: "ITPL Main Rd, Whitefield",
-    accepts: ["ewaste", "battery"],
-  },
-  {
-    id: "marathahalli-scrap",
-    name: "Marathahalli Scrap & Rubber Recycler",
-    lat: 12.9591, lon: 77.6974,
-    type: "Metal / Rubber",
-    address: "Outer Ring Rd, Marathahalli",
-    accepts: ["metal", "rubber", "plastic", "wood"],
-  },
-  {
-    id: "krpuram-medical",
-    name: "KR Puram Biomedical Collection Point",
-    lat: 13.0072, lon: 77.6957,
-    type: "Biomedical",
-    address: "Old Madras Rd, KR Puram",
-    accepts: ["medical", "hazardous"],
-  },
-
-  // --- North Bengaluru ---
-  {
-    id: "hebbal-dry",
-    name: "BBMP Dry Waste Centre — Hebbal",
-    lat: 13.0359, lon: 77.5970,
-    type: "Recycling",
-    address: "Hebbal Kempapura",
-    accepts: ["plastic", "paper", "metal", "glass", "cloth", "wood"],
-  },
-  {
-    id: "yelahanka-compost",
-    name: "Yelahanka Composting & Organic Hub",
-    lat: 13.1007, lon: 77.5963,
-    type: "Compost",
-    address: "Yelahanka New Town",
-    accepts: ["organic", "paper", "wood"],
-  },
-  {
-    id: "rtnagar-ewaste",
-    name: "RT Nagar E-Waste & Battery Drop-off",
-    lat: 13.0237, lon: 77.5972,
-    type: "E-waste / Battery",
-    address: "RT Nagar Main Rd",
-    accepts: ["ewaste", "battery", "hazardous"],
-  },
-
-  // --- Central Bengaluru ---
-  {
-    id: "mgroad-dry",
-    name: "BBMP Dry Waste Centre — Shivajinagar",
-    lat: 12.9854, lon: 77.6049,
-    type: "Recycling",
-    address: "Commercial St, Shivajinagar",
-    accepts: ["plastic", "paper", "metal", "glass", "cloth"],
-  },
-  {
-    id: "malleswaram-textile",
-    name: "Malleswaram Textile & Donation Centre",
-    lat: 13.0035, lon: 77.5709,
-    type: "Textile / Donation",
-    address: "Sampige Rd, Malleswaram",
-    accepts: ["cloth", "paper"],
-  },
-  {
-    id: "basavanagudi-glass",
-    name: "Basavanagudi Glass & Bottle Recycler",
-    lat: 12.9416, lon: 77.5712,
-    type: "Glass / Recycling",
-    address: "Bull Temple Rd, Basavanagudi",
-    accepts: ["glass", "metal", "plastic"],
-  },
-
-  // --- Peripheral ---
-  {
-    id: "electronic-city-ewaste",
-    name: "Electronic City Certified E-Waste Recycler",
-    lat: 12.8452, lon: 77.6602,
-    type: "E-waste / Battery",
-    address: "Phase 1, Electronic City",
-    accepts: ["ewaste", "battery", "hazardous"],
   },
 ];
 

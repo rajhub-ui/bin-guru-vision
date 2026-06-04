@@ -23,20 +23,20 @@ export interface MapPlace {
 function Recenter({ pos }: { pos: [number, number] }) {
   const map = useMap();
   useEffect(() => {
-    map.setView(pos, 13);
+    map.setView(pos, 11);
   }, [pos, map]);
   return null;
 }
 
 export default function DisposalMap({ pos, places }: { pos: [number, number]; places: MapPlace[] }) {
   return (
-    <MapContainer center={pos} zoom={13} style={{ height: "100%", width: "100%" }}>
+    <MapContainer center={pos} zoom={11} style={{ height: "100%", width: "100%" }}>
       <TileLayer attribution="&copy; OpenStreetMap" url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
       <Recenter pos={pos} />
       <Marker position={pos}>
         <Popup>You are here</Popup>
       </Marker>
-      <Circle center={pos} radius={1500} pathOptions={{ color: "#2d8a9e", fillOpacity: 0.06 }} />
+      <Circle center={pos} radius={15000} pathOptions={{ color: "#2d8a9e", fillOpacity: 0.04 }} />
       {places.map((p) => (
         <Marker key={p.id} position={[p.lat, p.lon]}>
           <Popup>

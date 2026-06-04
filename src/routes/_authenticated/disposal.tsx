@@ -16,7 +16,7 @@ export const Route = createFileRoute("/_authenticated/disposal")({
   head: () => ({
     meta: [
       { title: "Disposal map — EcoLens AI" },
-      { name: "description", content: "Curated waste-disposal centres across Bengaluru — recycling, e-waste, compost, hazardous and biomedical drop-offs." },
+      { name: "description", content: "Curated waste disposal centres across Bengaluru — covering Central, North, South, East, West, Whitefield & Electronic City." },
     ],
   }),
   component: DisposalPage,
@@ -31,9 +31,9 @@ function DisposalPage() {
       <header className="mb-6">
         <h1 className="text-4xl font-bold">Disposal map — Bengaluru</h1>
         <p className="text-muted-foreground mt-2">
-          Curated waste-disposal centres across Bengaluru — BBMP dry-waste,
-          certified e-waste, compost, scrap, hazardous and biomedical drop-offs.
-          Filter by the type of waste you need to drop off.
+          Curated waste-disposal centres across Bengaluru. Filter by the type of waste
+          you need to drop off — covers Central, North, South, East, West, Whitefield,
+          Electronic City and more.
         </p>
       </header>
 

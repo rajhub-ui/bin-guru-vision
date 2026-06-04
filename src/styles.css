@@ -142,3 +142,70 @@
   .eco-shadow { box-shadow: var(--shadow-eco); }
   .soft-shadow { box-shadow: var(--shadow-soft); }
 }
+
+/* ===== Floating Eco Assistant — Meta-AI-style ring FAB ===== */
+@keyframes eco-spin {
+  to { transform: rotate(360deg); }
+}
+@keyframes eco-pulse-glow {
+  0%, 100% { box-shadow: 0 0 24px 0 rgba(0, 230, 118, 0.45), 0 0 60px 0 rgba(0, 229, 255, 0.25); }
+  50% { box-shadow: 0 0 36px 4px rgba(0, 230, 118, 0.6), 0 0 80px 8px rgba(0, 229, 255, 0.35); }
+}
+
+.eco-fab {
+  background: #0a0f0d;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.3s ease;
+  animation: eco-pulse-glow 3s ease-in-out infinite;
+  padding: 0;
+}
+.eco-fab:hover,
+.eco-fab:active,
+.eco-fab:focus-visible {
+  transform: scale(0.96);
+  outline: none;
+}
+
+.eco-fab-core {
+  position: relative;
+  z-index: 2;
+  background: radial-gradient(circle at 30% 30%, #1a2420, #0a0f0d 70%);
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.06);
+}
+
+.eco-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+  padding: 2px;
+  background: conic-gradient(
+    from 0deg,
+    #00E676,
+    #00E5FF,
+    #0084ff,
+    #00E5FF,
+    #00E676
+  );
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+          mask-composite: exclude;
+  animation: eco-spin 4s linear infinite;
+  z-index: 1;
+}
+
+.eco-ring-mini {
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+  padding: 1.5px;
+  background: conic-gradient(from 0deg, #00E676, #00E5FF, #0084ff, #00E5FF, #00E676);
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+          mask-composite: exclude;
+  animation: eco-spin 4s linear infinite;
+}

@@ -1,7 +1,7 @@
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
 import { AppHeader } from "@/components/AppHeader";
 import { SiteFooter } from "@/components/SiteFooter";
-import { EcoAssistantFAB } from "@/components/EcoAssistantFAB";
+import { FloatingEcoAssistant } from "@/components/FloatingEcoAssistant";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/_authenticated")({
@@ -20,7 +20,7 @@ function AuthedLayout() {
         <Outlet />
       </main>
       <SiteFooter />
-      <EcoAssistantFAB />
+      <FloatingEcoAssistant />
     </div>
   );
 }

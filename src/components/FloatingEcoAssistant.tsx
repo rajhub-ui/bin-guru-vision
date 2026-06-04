@@ -11,10 +11,10 @@ const FN_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/eco-chat`;
 
 const WELCOME: Msg = {
   role: "assistant",
-  content: "🌱 Hello! I am your **Eco Assistant**. Ask me anything about waste sorting, recycling, composting or sustainable habits — I'm here to help.",
+  content: "🌱 Hello! I am your **Eco Assistant**. How can I help you today? Ask me about recycling, composting, hazardous waste, or sustainable habits.",
 };
 
-export function EcoAssistantFAB() {
+export function FloatingEcoAssistant() {
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<Msg[]>([WELCOME]);
   const [input, setInput] = useState("");
@@ -22,37 +22,18 @@ export function EcoAssistantFAB() {
   const [listening, setListening] = useState(false);
   const [speakingIdx, setSpeakingIdx] = useState<number | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const recogRef = useRef<any>(null);
 
   useEffect(() => {
-    scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
+    if (open) {
+      scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
+    }
   }, [messages, open]);
-
-  useEffect(() => {
-    if (open) setTimeout(() => inputRef.current?.focus(), 200);
-  }, [open]);
-
-  // Allow other components to ask the assistant directly.
-  // Usage: window.dispatchEvent(new CustomEvent("eco-assistant:ask", { detail: "question here" }))
-  useEffect(() => {
-    const handler = (e: Event) => {
-      const detail = (e as CustomEvent<string>).detail;
-      if (!detail) return;
-      setOpen(true);
-      setTimeout(() => void send(detail), 250);
-    };
-    window.addEventListener("eco-assistant:ask", handler);
-    return () => window.removeEventListener("eco-assistant:ask", handler);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   const speak = (text: string, idx: number) => {
     if (typeof window === "undefined" || !window.speechSynthesis) return;
     window.speechSynthesis.cancel();
-    if (speakingIdx === idx) {
-      setSpeakingIdx(null);
-      return;
-    }
+    if (speakingIdx === idx) { setSpeakingIdx(null); return; }
     const u = new SpeechSynthesisUtterance(text.replace(/[*_`#>]/g, ""));
     u.onend = () => setSpeakingIdx(null);
     u.onerror = () => setSpeakingIdx(null);
@@ -61,22 +42,15 @@ export function EcoAssistantFAB() {
   };
 
   const startMic = () => {
-    const w = window as unknown as { webkitSpeechRecognition?: new () => unknown; SpeechRecognition?: new () => unknown };
-    const SR = w.webkitSpeechRecognition || w.SpeechRecognition;
-    if (!SR) return toast.error("Speech recognition not supported in this browser.");
-    const r = new SR() as {
-      lang: string; interimResults: boolean; start: () => void;
-      onresult: (e: { results: { [k: number]: { [k: number]: { transcript: string } } } }) => void;
-      onerror: () => void; onend: () => void;
-    };
+    const SR = (window as any).webkitSpeechRecognition || (window as any).SpeechRecognition;
+    if (!SR) return toast.error("Speech recognition not supported.");
+    const r = new SR();
     r.lang = "en-US";
     r.interimResults = false;
-    r.onresult = (e) => {
-      setInput(e.results[0][0].transcript);
-      setListening(false);
-    };
+    r.onresult = (e: any) => { setInput(e.results[0][0].transcript); setListening(false); };
     r.onerror = () => setListening(false);
     r.onend = () => setListening(false);
+    recogRef.current = r;
     setListening(true);
     r.start();
   };
@@ -91,7 +65,6 @@ export function EcoAssistantFAB() {
     let acc = "";
     try {
       const { data: { session } } = await supabase.auth.getSession();
-      const payload = [...messages, userMsg];
       const resp = await fetch(FN_URL, {
         method: "POST",
         headers: {
@@ -99,7 +72,7 @@ export function EcoAssistantFAB() {
           apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
           ...(session ? { Authorization: `Bearer ${session.access_token}` } : {}),
         },
-        body: JSON.stringify({ messages: payload }),
+        body: JSON.stringify({ messages: [...messages, userMsg] }),
       });
       if (!resp.ok || !resp.body) {
         const e = await resp.json().catch(() => ({}));
@@ -146,51 +119,34 @@ export function EcoAssistantFAB() {
 
   return (
     <>
-      {/* Scoped keyframes for the ring spin + halo pulse */}
-      <style>{`
-        @keyframes eco-ring-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-        @keyframes eco-halo-pulse {
-          0%, 100% { box-shadow: 0 0 24px 4px rgba(0,230,118,0.45), 0 0 48px 8px rgba(0,229,255,0.25); }
-          50%      { box-shadow: 0 0 32px 6px rgba(0,230,118,0.65), 0 0 64px 12px rgba(0,229,255,0.4); }
-        }
-        .eco-ring-gradient {
-          background: conic-gradient(from 0deg,
-            #00E676 0%, #00E5FF 35%, #0084ff 65%, #00E676 100%);
-          animation: eco-ring-spin 6s linear infinite;
-        }
-        .eco-halo { animation: eco-halo-pulse 3.2s ease-in-out infinite; }
-      `}</style>
-
-      {/* Chat window */}
+      {/* Chat panel */}
       {open && (
         <div
-          className="fixed z-[60] bottom-[104px] right-6 w-[min(380px,calc(100vw-2rem))] h-[min(540px,calc(100vh-160px))] rounded-2xl overflow-hidden flex flex-col animate-scale-in"
+          className="fixed bottom-[104px] right-6 z-[60] w-[min(380px,calc(100vw-2rem))] h-[min(560px,calc(100vh-160px))] rounded-2xl overflow-hidden flex flex-col animate-scale-in"
           style={{
-            background: "color-mix(in oklab, hsl(var(--background)) 70%, transparent)",
-            backdropFilter: "blur(20px) saturate(160%)",
-            WebkitBackdropFilter: "blur(20px) saturate(160%)",
-            border: "1px solid color-mix(in oklab, #00E676 25%, transparent)",
-            boxShadow: "0 20px 60px -10px rgba(0,0,0,0.35), 0 0 0 1px rgba(255,255,255,0.04)",
+            background: "color-mix(in oklab, var(--card) 75%, transparent)",
+            backdropFilter: "blur(20px) saturate(140%)",
+            WebkitBackdropFilter: "blur(20px) saturate(140%)",
+            border: "1px solid color-mix(in oklab, #00E676 18%, transparent)",
+            boxShadow: "0 20px 60px -10px rgba(0, 230, 118, 0.25), 0 0 0 1px rgba(0,229,255,0.08)",
           }}
         >
           {/* Header */}
           <header className="flex items-center justify-between px-4 py-3 border-b border-border/40">
             <div className="flex items-center gap-2.5">
-              <div className="relative h-8 w-8 grid place-items-center rounded-full bg-black">
-                <div className="absolute inset-0.5 rounded-full eco-ring-gradient" />
-                <div className="absolute inset-[5px] rounded-full bg-black grid place-items-center">
-                  <Leaf className="h-3.5 w-3.5 text-[#00E676]" />
-                </div>
-              </div>
+              <span className="relative grid h-8 w-8 place-items-center rounded-full bg-[#0a0f0d]">
+                <span className="eco-ring-mini" />
+                <Leaf className="relative z-10 h-3.5 w-3.5 text-[#00E676]" />
+              </span>
               <div>
                 <h3 className="font-display font-semibold text-sm leading-tight">Eco Assistant</h3>
-                <p className="text-[10px] text-muted-foreground">Online · Sustainability AI</p>
+                <p className="text-[10px] text-muted-foreground leading-tight">Always-on sustainability help</p>
               </div>
             </div>
             <button
               onClick={() => setOpen(false)}
-              className="h-7 w-7 grid place-items-center rounded-full hover:bg-accent transition-colors"
-              aria-label="Close chat"
+              className="grid h-7 w-7 place-items-center rounded-full hover:bg-accent transition-colors"
+              aria-label="Close"
             >
               <X className="h-4 w-4" />
             </button>
@@ -200,11 +156,7 @@ export function EcoAssistantFAB() {
           <div ref={scrollRef} className="flex-1 overflow-y-auto px-3 py-3 space-y-3">
             {messages.map((m, i) => (
               <div key={i} className={`flex items-start gap-2 ${m.role === "user" ? "justify-end" : "justify-start"}`}>
-                <div className={`max-w-[82%] rounded-2xl px-3 py-2 text-sm ${
-                  m.role === "user"
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-card/80 border border-border/40"
-                }`}>
+                <div className={`max-w-[82%] rounded-2xl px-3 py-2 text-sm ${m.role === "user" ? "bg-primary text-primary-foreground" : "bg-card/80 border border-border/40"}`}>
                   <div className="prose prose-sm dark:prose-invert max-w-none">
                     <ReactMarkdown>{m.content || "…"}</ReactMarkdown>
                   </div>
@@ -215,7 +167,7 @@ export function EcoAssistantFAB() {
                     variant={speakingIdx === i ? "default" : "outline"}
                     className="h-9 w-9 shrink-0 rounded-full"
                     onClick={() => speak(m.content, i)}
-                    aria-label={speakingIdx === i ? "Stop speaking" : "Listen"}
+                    aria-label={speakingIdx === i ? "Stop" : "Listen"}
                   >
                     {speakingIdx === i ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
                   </Button>
@@ -223,32 +175,30 @@ export function EcoAssistantFAB() {
               </div>
             ))}
             {loading && (
-              <div className="flex items-center gap-2 text-xs text-muted-foreground pl-1">
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
                 <Loader2 className="h-3 w-3 animate-spin" /> thinking…
               </div>
             )}
           </div>
 
-          {/* Input */}
-          <div className="border-t border-border/40 p-3 flex gap-2">
-            <Button variant="outline" size="icon" onClick={startMic} disabled={listening} aria-label="Voice input">
+          {/* Composer */}
+          <div className="border-t border-border/40 p-2.5 flex gap-2">
+            <Button variant="outline" size="icon" onClick={startMic} disabled={listening} aria-label="Voice input" className="shrink-0">
               <Mic className={`h-4 w-4 ${listening ? "text-destructive" : ""}`} />
             </Button>
             <Input
-              ref={inputRef}
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && send()}
-              placeholder="Ask the Eco Assistant…"
+              placeholder="Ask about recycling, hazards…"
               className="bg-background/60"
             />
             <Button
               onClick={() => send()}
               disabled={loading || !input.trim()}
               size="icon"
+              className="shrink-0 text-primary-foreground"
               style={{ background: "linear-gradient(135deg, #00E676, #00E5FF)" }}
-              className="text-black hover:opacity-90"
-              aria-label="Send"
             >
               <Send className="h-4 w-4" />
             </Button>
@@ -260,16 +210,14 @@ export function EcoAssistantFAB() {
       <button
         onClick={() => setOpen((o) => !o)}
         aria-label={open ? "Close Eco Assistant" : "Open Eco Assistant"}
-        className="fixed z-[60] bottom-6 right-6 h-16 w-16 rounded-full grid place-items-center bg-black eco-halo transition-transform duration-200 hover:scale-105 active:scale-[0.96] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#00E676]"
+        className="eco-fab fixed bottom-6 right-6 z-[60] grid h-16 w-16 place-items-center rounded-full"
       >
-        {/* Spinning gradient ring */}
-        <span className="absolute inset-0 rounded-full eco-ring-gradient" />
-        {/* Inner dark disc */}
-        <span className="absolute inset-[4px] rounded-full bg-black grid place-items-center">
+        <span className="eco-ring" aria-hidden />
+        <span className="eco-fab-core grid h-[52px] w-[52px] place-items-center rounded-full">
           {open ? (
-            <X className="h-5 w-5 text-[#00E676]" />
+            <X className="h-5 w-5 text-white" />
           ) : (
-            <Leaf className="h-6 w-6 text-[#00E676]" />
+            <Leaf className="h-5 w-5 text-[#00E676]" />
           )}
         </span>
       </button>
