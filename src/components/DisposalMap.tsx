@@ -23,7 +23,7 @@ export interface MapPlace {
 function Recenter({ pos }: { pos: [number, number] }) {
   const map = useMap();
   useEffect(() => {
-    map.setView(pos, 13);
+    map.setView(pos, 11);
   }, [pos, map]);
   return null;
 }
