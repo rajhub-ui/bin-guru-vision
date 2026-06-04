@@ -180,8 +180,8 @@ function LivePage() {
       </header>
 
       <div className="grid lg:grid-cols-5 gap-6">
-        <div className="lg:col-span-3 glass rounded-2xl p-4 soft-shadow">
-          <div ref={wrapRef} className="relative rounded-xl overflow-hidden bg-black aspect-video">
+        <div className="lg:col-span-3 glass-strong rounded-3xl p-3 md:p-4 neon-shadow">
+          <div ref={wrapRef} className="relative rounded-2xl overflow-hidden bg-black aspect-video">
             <video ref={videoRef} className="w-full h-full object-cover" playsInline muted />
             <canvas
               ref={overlayRef}
@@ -203,27 +203,45 @@ function LivePage() {
               }}
               className="absolute inset-0 w-full h-full cursor-pointer"
             />
+
+            {/* HUD overlay layers — only when camera is live */}
+            {running && (
+              <>
+                <div className="hud-scanlines" />
+                {busy && <div className="hud-scanline-beam" />}
+                {/* Corner crosshairs */}
+                <CornerCrosshair className="top-3 left-3" />
+                <CornerCrosshair className="top-3 right-3 rotate-90" />
+                <CornerCrosshair className="bottom-3 left-3 -rotate-90" />
+                <CornerCrosshair className="bottom-3 right-3 rotate-180" />
+              </>
+            )}
+
             {!running && (
-              <div className="absolute inset-0 grid place-items-center text-white/70 text-sm bg-black/40">
+              <div className="absolute inset-0 grid place-items-center text-white/70 text-sm bg-black/50">
                 <div className="text-center">
                   <CameraIcon className="h-10 w-10 mx-auto mb-2 opacity-60" />
                   Camera off — press <span className="font-semibold">Start Camera</span>
                 </div>
               </div>
             )}
-            {busy && (
-              <div className="absolute top-3 right-3 bg-background/90 rounded-full px-3 py-1.5 flex items-center gap-2 text-xs font-medium shadow">
-                <Loader2 className="h-3.5 w-3.5 animate-spin" /> Scanning
+
+            {/* HUD status chips */}
+            {running && (
+              <div className="absolute top-3 left-1/2 -translate-x-1/2 flex items-center gap-2 text-[10px] font-mono tracking-widest uppercase text-emerald-300/90 bg-black/45 border border-emerald-400/30 px-3 py-1 rounded-full backdrop-blur">
+                <span className={`h-1.5 w-1.5 rounded-full ${busy ? "bg-emerald-300 animate-pulse" : "bg-emerald-400"}`} />
+                {busy ? "Analyzing frame" : "AI HUD live"}
               </div>
             )}
             {running && items.length > 0 && (
-              <div className="absolute bottom-3 left-3 bg-background/90 rounded-full px-3 py-1 text-xs font-semibold shadow">
+              <div className="absolute bottom-3 left-3 bg-black/60 backdrop-blur border border-white/10 text-white rounded-full px-3 py-1 text-xs font-semibold">
                 {items.length} item{items.length > 1 ? "s" : ""} detected
               </div>
             )}
           </div>
           <canvas ref={captureRef} className="hidden" />
         </div>
+
 
         <div className="lg:col-span-2 glass rounded-2xl p-6 soft-shadow">
           <h2 className="font-display text-xl font-semibold mb-3">Detections & disposal</h2>
