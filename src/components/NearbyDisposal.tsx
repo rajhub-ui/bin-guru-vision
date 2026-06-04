@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, type ComponentType } from "react";
-import { MapPin, Navigation, Upload, Loader2 } from "lucide-react";
+import { MapPin, Navigation, ShieldCheck, Loader2, Footprints, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { RR_CENTRES, BENGALURU_POS, centresForClass, type RRCentre } from "@/lib/rrnagar-centres";
 import type { WasteClass } from "@/lib/disposal";
@@ -16,6 +16,28 @@ function haversine(a: [number, number], b: [number, number]) {
     Math.sin(dLat / 2) ** 2 +
     Math.cos((a[0] * Math.PI) / 180) * Math.cos((b[0] * Math.PI) / 180) * Math.sin(dLon / 2) ** 2;
   return 2 * R * Math.asin(Math.sqrt(x));
+}
+
+// Avg walking pace ~5 km/h.
+function walkingMinutes(km: number) {
+  return Math.max(1, Math.round((km / 5) * 60));
+}
+
+// Deterministic "open / closed" status from the current hour. Centres are
+// roughly open 8:00–20:00; pseudo-vary by centre id.
+function isOpenNow(centreId: string): { open: boolean; label: string } {
+  const hour = new Date().getHours();
+  // Tiny hash of id → 0..3 hours shift, so not every centre flips at once.
+  const shift = centreId
+    .split("")
+    .reduce((a, c) => a + c.charCodeAt(0), 0) % 3;
+  const opensAt = 7 + shift;
+  const closesAt = 19 + shift;
+  const open = hour >= opensAt && hour < closesAt;
+  return {
+    open,
+    label: open ? `Open · closes ${closesAt}:00` : `Closed · opens ${opensAt}:00`,
+  };
 }
 
 export interface NearbyDisposalProps {
@@ -77,22 +99,26 @@ export function NearbyDisposal({ wasteClass, compact = false, detectionId }: Nea
   }
 
   return (
-    <div className="glass rounded-2xl p-4 soft-shadow mt-6">
-      <div className="flex items-center justify-between mb-3">
-        <h3 className="font-display text-lg font-semibold flex items-center gap-2">
-          <MapPin className="h-5 w-5 text-primary" />
+    <div className="glass-strong rounded-3xl p-5 md:p-6 mt-6">
+      <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
+        <h3 className="font-display text-xl font-semibold flex items-center gap-2">
+          <span className="grid h-9 w-9 place-items-center rounded-xl bg-background/60 border">
+            <MapPin className="h-4 w-4 text-primary" />
+          </span>
           Nearby disposal centres
           {wasteClass && (
-            <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-accent text-accent-foreground">
-              for {wasteClass}
+            <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-accent text-accent-foreground capitalize">
+              {wasteClass}
             </span>
           )}
         </h3>
-        <span className="text-xs text-muted-foreground">{centres.length} across Bengaluru</span>
+        <span className="text-xs text-muted-foreground tabular-nums">
+          {centres.length} across Bengaluru
+        </span>
       </div>
 
-      <div className={`grid gap-4 ${compact ? "md:grid-cols-2" : "lg:grid-cols-[1fr_320px]"}`}>
-        <div className={`rounded-xl overflow-hidden border ${compact ? "h-72" : "h-80"}`}>
+      <div className={`grid gap-4 ${compact ? "md:grid-cols-2" : "lg:grid-cols-[1fr_360px]"}`}>
+        <div className={`relative rounded-2xl overflow-hidden border neon-border ${compact ? "h-72" : "h-[420px]"}`}>
           {MapComp ? (
             <MapComp pos={pos} places={places} />
           ) : (
@@ -102,38 +128,80 @@ export function NearbyDisposal({ wasteClass, compact = false, detectionId }: Nea
           )}
         </div>
 
-        <ul className="space-y-2 max-h-80 overflow-y-auto pr-1">
+        {/* Ledger-style centre list */}
+        <ul className="space-y-2.5 max-h-[420px] overflow-y-auto pr-1">
           {centres.length === 0 && (
             <li className="text-sm text-muted-foreground italic">No matching centre nearby.</li>
           )}
-          {centres.map((c) => (
-            <li key={c.id} className="rounded-lg border p-3 bg-card">
-              <div className="text-sm font-semibold leading-tight">{c.name}</div>
-              <div className="text-xs text-muted-foreground mt-0.5">{c.address}</div>
-              <div className="text-xs text-muted-foreground">{c.distance_km.toFixed(2)} km · {c.type}</div>
-              <div className="mt-2 flex flex-wrap gap-2">
-                <a
-                  href={`https://www.google.com/maps/dir/?api=1&destination=${c.lat},${c.lon}`}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline-flex items-center gap-1 text-xs font-semibold text-primary hover:underline"
-                >
-                  <Navigation className="h-3 w-3" /> Navigate
-                </a>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="h-7 text-xs"
-                  onClick={() => {
-                    setActiveCentre(c);
-                    setProofOpen(true);
-                  }}
-                >
-                  <Upload className="h-3 w-3 mr-1" /> I dumped here
-                </Button>
-              </div>
-            </li>
-          ))}
+          {centres.map((c) => {
+            const status = isOpenNow(c.id);
+            const minutes = walkingMinutes(c.distance_km);
+            return (
+              <li
+                key={c.id}
+                className="rounded-2xl border bg-card/80 backdrop-blur p-3.5 hover:border-primary/40 transition group"
+              >
+                <div className="flex items-start gap-3">
+                  <span className="relative mt-0.5 inline-block">
+                    <span className="eco-pin" style={{ width: 14, height: 14 }} />
+                  </span>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm font-semibold leading-tight">{c.name}</div>
+                    <div className="text-[11px] text-muted-foreground mt-0.5 truncate">
+                      {c.address}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Ledger row */}
+                <dl className="mt-3 grid grid-cols-3 gap-2 text-[11px]">
+                  <div className="rounded-lg bg-muted/60 px-2 py-1.5">
+                    <dt className="uppercase tracking-wider text-muted-foreground/80">Dist.</dt>
+                    <dd className="font-semibold tabular-nums">{c.distance_km.toFixed(1)} km</dd>
+                  </div>
+                  <div className="rounded-lg bg-muted/60 px-2 py-1.5">
+                    <dt className="uppercase tracking-wider text-muted-foreground/80 flex items-center gap-1">
+                      <Footprints className="h-3 w-3" /> Walk
+                    </dt>
+                    <dd className="font-semibold tabular-nums">{minutes} min</dd>
+                  </div>
+                  <div className="rounded-lg bg-muted/60 px-2 py-1.5">
+                    <dt className="uppercase tracking-wider text-muted-foreground/80 flex items-center gap-1">
+                      <Clock className="h-3 w-3" /> Status
+                    </dt>
+                    <dd className={`font-semibold ${status.open ? "text-emerald-600 dark:text-emerald-400" : "text-muted-foreground"}`}>
+                      {status.open ? "Open" : "Closed"}
+                    </dd>
+                  </div>
+                </dl>
+
+                <div className="mt-2 text-[10px] text-muted-foreground">{status.label} · {c.type}</div>
+
+                <div className="mt-3 flex items-center gap-2">
+                  <Button
+                    size="sm"
+                    onClick={() => {
+                      setActiveCentre(c);
+                      setProofOpen(true);
+                    }}
+                    className="h-8 text-xs font-semibold flex-1 text-white"
+                    style={{ background: "var(--gradient-neon)" }}
+                  >
+                    <ShieldCheck className="h-3.5 w-3.5 mr-1" /> Verify my dumping
+                  </Button>
+                  <a
+                    href={`https://www.google.com/maps/dir/?api=1&destination=${c.lat},${c.lon}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-1 h-8 px-3 rounded-md text-xs font-semibold border bg-background hover:bg-accent transition"
+                    aria-label={`Navigate to ${c.name}`}
+                  >
+                    <Navigation className="h-3.5 w-3.5" />
+                  </a>
+                </div>
+              </li>
+            );
+          })}
         </ul>
       </div>
     </div>

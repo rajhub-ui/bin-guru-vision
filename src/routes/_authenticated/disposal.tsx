@@ -29,22 +29,27 @@ function DisposalPage() {
   return (
     <div className="max-w-6xl mx-auto">
       <header className="mb-6">
-        <h1 className="text-4xl font-bold">Disposal map — Bengaluru</h1>
-        <p className="text-muted-foreground mt-2">
-          Curated waste-disposal centres across Bengaluru. Filter by the type of waste
-          you need to drop off — covers Central, North, South, East, West, Whitefield,
-          Electronic City and more.
+        <div className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground mb-2">
+          Local Disposal Network
+        </div>
+        <h1 className="text-4xl md:text-5xl font-bold tracking-tight">
+          Disposal map — <span className="eco-gradient-text">Bengaluru</span>
+        </h1>
+        <p className="text-muted-foreground mt-2 max-w-2xl">
+          Curated waste-disposal centres across the city. Filter by type to find a verified
+          drop-off — covers Central, North, South, East, West, Whitefield, Electronic City &amp; more.
         </p>
       </header>
 
       <div className="flex flex-wrap gap-2 mb-4">
         <button
           onClick={() => setFilter(null)}
-          className={`text-xs font-medium px-3 py-1.5 rounded-full border transition ${
+          className={`text-xs font-semibold px-3.5 py-1.5 rounded-full border transition ${
             filter === null
-              ? "bg-[var(--gradient-primary)] text-primary-foreground border-transparent"
+              ? "text-white border-transparent neon-shadow"
               : "border-border hover:bg-accent"
           }`}
+          style={filter === null ? { background: "var(--gradient-neon)" } : undefined}
         >
           All centres
         </button>
@@ -52,11 +57,12 @@ function DisposalPage() {
           <button
             key={c}
             onClick={() => setFilter(c)}
-            className={`text-xs font-medium px-3 py-1.5 rounded-full border transition capitalize ${
+            className={`text-xs font-semibold px-3.5 py-1.5 rounded-full border transition capitalize ${
               filter === c
-                ? "bg-[var(--gradient-primary)] text-primary-foreground border-transparent"
+                ? "text-white border-transparent neon-shadow"
                 : "border-border hover:bg-accent"
             }`}
+            style={filter === c ? { background: "var(--gradient-neon)" } : undefined}
           >
             {c}
           </button>
