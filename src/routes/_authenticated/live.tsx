@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Play, Square, Loader2, Camera as CameraIcon, Sparkles } from "lucide-react";
+import { Square, Camera as CameraIcon, Sparkles } from "lucide-react";
 import { classifyCanvas, logDetection, type DetectedItem } from "@/lib/scan";
 import { DISPOSAL, DECOMPOSITION, MATERIALS } from "@/lib/disposal";
 import { EcoAssistant } from "@/components/EcoAssistant";
