@@ -243,10 +243,18 @@ function LivePage() {
         </div>
 
 
-        <div className="lg:col-span-2 glass rounded-2xl p-6 soft-shadow">
-          <h2 className="font-display text-xl font-semibold mb-3">Detections & disposal</h2>
+        <div className="lg:col-span-2 glass-strong rounded-3xl p-5 md:p-6 animate-sheet-up">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="font-display text-lg font-semibold">Material taxonomy</h2>
+            <span className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
+              Live HUD
+            </span>
+          </div>
           {items.length === 0 ? (
-            <p className="text-sm text-muted-foreground">Hold one or more items in frame…</p>
+            <div className="text-center py-10 rounded-2xl border border-dashed">
+              <div className="text-3xl mb-2">🔭</div>
+              <p className="text-sm text-muted-foreground">Hold one or more items in frame…</p>
+            </div>
           ) : (
             <div className="space-y-3 max-h-[560px] overflow-y-auto pr-1">
               {items.map((it, i) => {
@@ -263,22 +271,24 @@ function LivePage() {
                       setActiveIdx(i);
                       setFocusQuery(`Tell me specifically about the ${it.label} (${it.class}) — bin, hazards, how to recycle it.`);
                     }}
-                    className={`w-full text-left rounded-xl border p-3 bg-card transition ${focused ? "ring-2 ring-primary" : "hover:bg-accent/30"}`}
+                    className={`w-full text-left rounded-2xl border p-3 bg-card/80 backdrop-blur transition animate-sheet-up ${focused ? "ring-2 ring-primary border-primary/40" : "hover:bg-accent/30"}`}
                     style={{ borderLeft: `4px solid ${color}` }}
                   >
                     <div className="flex items-center gap-3">
-                      <div className="text-2xl">{d.emoji}</div>
+                      <div className="grid h-10 w-10 place-items-center rounded-xl bg-accent text-xl">
+                        {d.emoji}
+                      </div>
                       <div className="flex-1 min-w-0">
                         <div className="font-semibold truncate">{it.label}</div>
                         <div className="text-xs text-muted-foreground capitalize">
                           {d.label} · {d.bin}
                         </div>
                       </div>
-                      <div className="text-xs tabular-nums font-mono">
+                      <div className="text-xs tabular-nums font-mono px-2 py-1 rounded-md bg-background border">
                         {Math.round(it.confidence * 100)}%
                       </div>
                     </div>
-                    <div className="mt-3 rounded-lg border bg-accent/30 p-2.5 text-xs space-y-1.5">
+                    <div className="mt-3 rounded-xl border bg-background/60 p-3 text-xs space-y-1.5">
                       <div><span className="font-semibold text-primary">Material:</span> <span className="text-muted-foreground">{mat.composition}</span></div>
                       <div><span className="font-semibold text-primary">How it's made:</span> <span className="text-muted-foreground">{mat.manufacturing}</span></div>
                       <div><span className="font-semibold text-primary">Decomposes in:</span> <span className="text-muted-foreground">{dec.time}</span></div>
@@ -291,6 +301,7 @@ function LivePage() {
             </div>
           )}
         </div>
+
       </div>
 
       {items.length > 0 && (
