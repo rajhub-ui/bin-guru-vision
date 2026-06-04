@@ -16,7 +16,7 @@ export const Route = createFileRoute("/_authenticated/disposal")({
   head: () => ({
     meta: [
       { title: "Disposal map — EcoLens AI" },
-      { name: "description", content: "5 hand-picked waste disposal centres near RNSIT College, RR Nagar, Bangalore." },
+      { name: "description", content: "Curated waste disposal centres across Bengaluru — covering Central, North, South, East, West, Whitefield & Electronic City." },
     ],
   }),
   component: DisposalPage,
