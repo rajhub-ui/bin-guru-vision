@@ -88,7 +88,7 @@ export function NearbyDisposal({ wasteClass, compact = false, detectionId }: Nea
             </span>
           )}
         </h3>
-        <span className="text-xs text-muted-foreground">{centres.length} near RNSIT</span>
+        <span className="text-xs text-muted-foreground">{centres.length} across Bengaluru</span>
       </div>
 
       <div className={`grid gap-4 ${compact ? "md:grid-cols-2" : "lg:grid-cols-[1fr_320px]"}`}>
