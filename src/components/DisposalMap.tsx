@@ -30,7 +30,7 @@ function Recenter({ pos }: { pos: [number, number] }) {
 
 export default function DisposalMap({ pos, places }: { pos: [number, number]; places: MapPlace[] }) {
   return (
-    <MapContainer center={pos} zoom={13} style={{ height: "100%", width: "100%" }}>
+    <MapContainer center={pos} zoom={11} style={{ height: "100%", width: "100%" }}>
       <TileLayer attribution="&copy; OpenStreetMap" url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
       <Recenter pos={pos} />
       <Marker position={pos}>
