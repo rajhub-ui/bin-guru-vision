@@ -25,7 +25,7 @@ export interface NearbyDisposalProps {
 }
 
 export function NearbyDisposal({ wasteClass, compact = false, detectionId }: NearbyDisposalProps) {
-  const [pos, setPos] = useState<[number, number]>(RNSIT_POS);
+  const [pos, setPos] = useState<[number, number]>(BENGALURU_POS);
   const [MapComp, setMapComp] = useState<DisposalMapType | null>(null);
   const [proofOpen, setProofOpen] = useState(false);
   const [activeCentre, setActiveCentre] = useState<RRCentre | null>(null);
