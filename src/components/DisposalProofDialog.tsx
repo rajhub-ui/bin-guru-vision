@@ -1,7 +1,7 @@
 import { useRef, useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Camera, Loader2, Sparkles, Upload, ShieldAlert } from "lucide-react";
+import { Camera, Loader2, ShieldCheck, Upload, ShieldAlert, ImagePlus, X, Sparkles } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import type { RRCentre } from "@/lib/rrnagar-centres";
@@ -31,6 +31,13 @@ function fileToBase64(file: File): Promise<string> {
   });
 }
 
+const STAGES = [
+  "Hashing image…",
+  "Verifying coordinates…",
+  "Cross-checking AI vision…",
+  "Awarding eco-points…",
+];
+
 export function DisposalProofDialog({ open, onOpenChange, centre, wasteClass, detectionId, onAwarded }: DisposalProofDialogProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [file, setFile] = useState<File | null>(null);
@@ -38,11 +45,16 @@ export function DisposalProofDialog({ open, onOpenChange, centre, wasteClass, de
   const [busy, setBusy] = useState(false);
   const [stage, setStage] = useState<string>("");
   const [rejectReason, setRejectReason] = useState<string | null>(null);
+  const [dragging, setDragging] = useState(false);
 
   const points = wasteClass ? ecoPointsForClass(wasteClass) : 25;
 
   const pick = (f: File | undefined) => {
     if (!f) return;
+    if (!f.type.startsWith("image/")) {
+      toast.error("Please upload an image file.");
+      return;
+    }
     setFile(f);
     setPreview(URL.createObjectURL(f));
     setRejectReason(null);
@@ -54,6 +66,7 @@ export function DisposalProofDialog({ open, onOpenChange, centre, wasteClass, de
     setBusy(false);
     setStage("");
     setRejectReason(null);
+    setDragging(false);
   };
 
   const submit = async () => {
@@ -68,7 +81,6 @@ export function DisposalProofDialog({ open, onOpenChange, centre, wasteClass, de
         return;
       }
 
-      // Prevent duplicate claim for the same detection
       if (detectionId) {
         const { data: existing } = await supabase
           .from("disposal_proofs")
@@ -83,9 +95,9 @@ export function DisposalProofDialog({ open, onOpenChange, centre, wasteClass, de
         }
       }
 
-      // 1) AI verification
-      setStage("Verifying photo with AI…");
+      setStage(STAGES[0]);
       const base64 = await fileToBase64(file);
+      setStage(STAGES[2]);
       const vRes = await fetch(VERIFY_URL, {
         method: "POST",
         headers: {
@@ -107,7 +119,6 @@ export function DisposalProofDialog({ open, onOpenChange, centre, wasteClass, de
         return;
       }
 
-      // 2) Upload
       setStage("Uploading proof…");
       const ext = (file.name.split(".").pop() || "jpg").toLowerCase();
       const path = `${user.id}/${crypto.randomUUID()}.${ext}`;
@@ -116,8 +127,7 @@ export function DisposalProofDialog({ open, onOpenChange, centre, wasteClass, de
       });
       if (up.error) throw up.error;
 
-      // 3) Insert (unique index prevents duplicates server-side too)
-      setStage("Awarding eco-points…");
+      setStage(STAGES[3]);
       const { error: insErr } = await supabase.from("disposal_proofs").insert({
         user_id: user.id,
         detection_id: detectionId ?? null,
@@ -134,7 +144,6 @@ export function DisposalProofDialog({ open, onOpenChange, centre, wasteClass, de
         throw insErr;
       }
 
-      // 4) Increment eco_score via server-validated RPC
       await supabase.rpc("increment_eco_score", { delta: points });
 
       toast.success(`🎉 +${points} eco-points awarded!`, {
@@ -160,76 +169,133 @@ export function DisposalProofDialog({ open, onOpenChange, centre, wasteClass, de
         if (!v) reset();
       }}
     >
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Sparkles className="h-5 w-5 text-primary" />
-            Upload proof of disposal
-          </DialogTitle>
-          <DialogDescription>
-            {centre ? (
-              <>Photo must clearly show the <b>{wasteClass ?? "waste"}</b> being dropped into the bin at <b>{centre.name}</b>. Verified photos earn <b>+{points} eco-points</b>.</>
-            ) : (
-              "Snap or upload a photo of the waste in the bin."
-            )}
-          </DialogDescription>
-        </DialogHeader>
-
-        <div
-          onClick={() => !busy && inputRef.current?.click()}
-          className="rounded-xl border-2 border-dashed p-4 min-h-[180px] grid place-items-center cursor-pointer hover:bg-accent/40 transition"
-        >
-          <input
-            ref={inputRef}
-            type="file"
-            accept="image/*"
-            capture="environment"
-            hidden
-            onChange={(e) => pick(e.target.files?.[0])}
-          />
-          {preview ? (
-            <img src={preview} alt="proof preview" className="max-h-56 rounded-lg" />
-          ) : (
-            <div className="text-center text-sm text-muted-foreground">
-              <Camera className="h-8 w-8 mx-auto mb-2 opacity-60" />
-              Tap to take a photo or upload from gallery
-            </div>
-          )}
+      <DialogContent className="sm:max-w-lg glass-strong border-0 p-0 overflow-hidden">
+        {/* Header band */}
+        <div className="relative px-6 pt-6 pb-4"
+             style={{
+               background:
+                 "radial-gradient(80% 80% at 100% 0%, color-mix(in oklab, var(--neon) 22%, transparent), transparent), radial-gradient(80% 80% at 0% 100%, color-mix(in oklab, var(--neon-cyan) 18%, transparent), transparent)",
+             }}>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-xl">
+              <span className="grid h-9 w-9 place-items-center rounded-xl bg-background/70 border">
+                <ShieldCheck className="h-5 w-5 text-primary" />
+              </span>
+              Verify your dumping
+              <span className="ml-auto inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-bold bg-background/80 border">
+                <Sparkles className="h-3 w-3 text-primary" /> +{points} pts
+              </span>
+            </DialogTitle>
+            <DialogDescription className="mt-1">
+              {centre ? (
+                <>Snap a photo clearly showing the <b>{wasteClass ?? "waste"}</b> being dropped at <b>{centre.name}</b>. AI cross-checks the image &amp; coordinates before awarding points.</>
+              ) : (
+                "Snap or upload a photo of the waste in the bin."
+              )}
+            </DialogDescription>
+          </DialogHeader>
         </div>
 
-        {rejectReason && (
-          <div className="rounded-lg border border-destructive/40 bg-destructive/10 p-3 text-sm flex gap-2">
-            <ShieldAlert className="h-4 w-4 text-destructive shrink-0 mt-0.5" />
-            <div>
-              <div className="font-semibold text-destructive">Photo rejected</div>
-              <div className="text-muted-foreground">{rejectReason}</div>
-            </div>
-          </div>
-        )}
-
-        {busy && stage && (
-          <div className="text-xs text-muted-foreground flex items-center gap-2">
-            <Loader2 className="h-3 w-3 animate-spin" /> {stage}
-          </div>
-        )}
-
-        <DialogFooter className="gap-2">
-          <Button variant="ghost" onClick={() => onOpenChange(false)} disabled={busy}>
-            Cancel
-          </Button>
-          <Button
-            onClick={submit}
-            disabled={!file || busy}
-            style={{ background: "var(--gradient-primary)" }}
-            className="text-primary-foreground"
+        <div className="px-6 pb-6 space-y-4">
+          {/* Drop zone */}
+          <div
+            data-drag={dragging}
+            className="drop-zone p-5 min-h-[200px] grid place-items-center cursor-pointer"
+            onClick={() => !busy && !preview && inputRef.current?.click()}
+            onDragOver={(e) => { e.preventDefault(); if (!busy) setDragging(true); }}
+            onDragLeave={() => setDragging(false)}
+            onDrop={(e) => {
+              e.preventDefault();
+              setDragging(false);
+              if (busy) return;
+              const f = e.dataTransfer.files?.[0];
+              pick(f);
+            }}
           >
-            {busy ? (
-              <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Working…</>
+            <input
+              ref={inputRef}
+              type="file"
+              accept="image/*"
+              capture="environment"
+              hidden
+              onChange={(e) => pick(e.target.files?.[0])}
+            />
+            {preview ? (
+              <div className="relative w-full">
+                <div className="relative mx-auto w-fit rounded-xl overflow-hidden neon-border">
+                  <img src={preview} alt="proof preview" className="max-h-64 block" />
+                  {busy && (
+                    <div className="absolute inset-0 bg-background/60 grid place-items-center backdrop-blur-sm">
+                      <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-background/90 border text-xs font-medium">
+                        <Loader2 className="h-3.5 w-3.5 animate-spin" /> {stage || "Verifying…"}
+                      </div>
+                    </div>
+                  )}
+                </div>
+                {!busy && (
+                  <div className="mt-3 flex items-center justify-center gap-2">
+                    <Button variant="outline" size="sm" onClick={() => inputRef.current?.click()}>
+                      <ImagePlus className="h-3.5 w-3.5 mr-1" /> Replace
+                    </Button>
+                    <Button variant="ghost" size="sm" onClick={reset}>
+                      <X className="h-3.5 w-3.5 mr-1" /> Remove
+                    </Button>
+                  </div>
+                )}
+              </div>
             ) : (
-              <><Upload className="h-4 w-4 mr-2" /> Verify & claim +{points}</>
+              <div className="text-center">
+                <div className="mx-auto h-14 w-14 grid place-items-center rounded-2xl bg-background/70 border mb-3">
+                  <Camera className="h-6 w-6 text-primary" />
+                </div>
+                <div className="font-semibold">Drag &amp; drop a photo here</div>
+                <div className="text-xs text-muted-foreground mt-1">
+                  or <span className="text-primary font-medium">tap to take / upload</span> · PNG, JPG up to 10 MB
+                </div>
+              </div>
             )}
-          </Button>
-        </DialogFooter>
+          </div>
+
+          {/* Shimmer progress while busy */}
+          {busy && (
+            <div className="space-y-2">
+              <div className="h-1.5 rounded-full overflow-hidden bg-muted">
+                <div className="h-full w-full shimmer rounded-full" />
+              </div>
+              <div className="text-xs text-muted-foreground flex items-center gap-2">
+                <Loader2 className="h-3 w-3 animate-spin" /> {stage}
+              </div>
+            </div>
+          )}
+
+          {rejectReason && (
+            <div className="rounded-xl border border-destructive/40 bg-destructive/10 p-3 text-sm flex gap-2 animate-sheet-up">
+              <ShieldAlert className="h-4 w-4 text-destructive shrink-0 mt-0.5" />
+              <div>
+                <div className="font-semibold text-destructive">Photo rejected</div>
+                <div className="text-muted-foreground">{rejectReason}</div>
+              </div>
+            </div>
+          )}
+
+          <DialogFooter className="gap-2 pt-2">
+            <Button variant="ghost" onClick={() => onOpenChange(false)} disabled={busy}>
+              Cancel
+            </Button>
+            <Button
+              onClick={submit}
+              disabled={!file || busy}
+              style={{ background: "var(--gradient-neon)" }}
+              className="text-white font-semibold neon-shadow"
+            >
+              {busy ? (
+                <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Verifying…</>
+              ) : (
+                <><Upload className="h-4 w-4 mr-2" /> Verify &amp; claim +{points}</>
+              )}
+            </Button>
+          </DialogFooter>
+        </div>
       </DialogContent>
     </Dialog>
   );
