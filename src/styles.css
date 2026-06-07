@@ -128,32 +128,50 @@
   --popover: oklch(0.21 0.015 175);
   --popover-foreground: oklch(0.97 0.01 150);
 
-  --primary: oklch(0.82 0.22 152);
-  --primary-foreground: oklch(0.14 0.02 175);
-  --primary-glow: oklch(0.88 0.18 152);
+.dark {
+  /* Deep luxury forest */
+  --background: oklch(0.18 0.03 158);
+  --foreground: oklch(0.97 0.02 150);
 
-  --secondary: oklch(0.26 0.02 175);
-  --secondary-foreground: oklch(0.97 0.01 150);
-  --muted: oklch(0.24 0.015 175);
-  --muted-foreground: oklch(0.72 0.015 160);
-  --accent: oklch(0.3 0.07 160);
-  --accent-foreground: oklch(0.97 0.01 150);
+  --card: oklch(0.23 0.035 158);
+  --card-foreground: oklch(0.97 0.02 150);
+  --popover: oklch(0.23 0.035 158);
+  --popover-foreground: oklch(0.97 0.02 150);
+
+  --primary: oklch(0.82 0.22 152);
+  --primary-foreground: oklch(0.14 0.04 158);
+  --primary-glow: oklch(0.9 0.18 158);
+
+  --secondary: oklch(0.28 0.04 158);
+  --secondary-foreground: oklch(0.97 0.02 150);
+  --muted: oklch(0.26 0.03 158);
+  --muted-foreground: oklch(0.78 0.025 155);
+  --accent: oklch(0.32 0.08 158);
+  --accent-foreground: oklch(0.97 0.02 150);
   --destructive: oklch(0.66 0.22 25);
   --destructive-foreground: oklch(0.99 0 0);
-  --border: oklch(0.3 0.015 175);
-  --input: oklch(0.28 0.015 175);
+  --border: oklch(0.34 0.035 158);
+  --input: oklch(0.3 0.03 158);
   --ring: oklch(0.82 0.22 152);
 
-  --neon: oklch(0.85 0.22 152);
+  --neon: oklch(0.86 0.22 152);
   --neon-cyan: oklch(0.86 0.18 200);
 
+  --moss: oklch(0.42 0.07 158);
+  --ivory: oklch(0.96 0.015 150);
+  --forest-deep: oklch(0.14 0.035 160);
+  --forest-mid: oklch(0.22 0.05 158);
+  --mint-glow: oklch(0.86 0.2 160);
+
   --gradient-hero:
-    radial-gradient(1200px 600px at 80% -10%, color-mix(in oklab, var(--neon) 18%, transparent), transparent),
-    radial-gradient(900px 500px at -10% 30%, color-mix(in oklab, var(--neon-cyan) 14%, transparent), transparent),
-    linear-gradient(135deg, oklch(0.18 0.015 175), oklch(0.14 0.02 200));
-  --gradient-card: linear-gradient(180deg, oklch(0.23 0.015 175 / 0.78), oklch(0.2 0.015 175 / 0.55));
-  --shadow-eco: 0 24px 60px -24px color-mix(in oklab, var(--neon) 60%, transparent);
-  --shadow-glow: 0 0 0 1px color-mix(in oklab, var(--neon) 26%, transparent), 0 20px 60px -20px color-mix(in oklab, var(--neon) 45%, transparent);
+    radial-gradient(1200px 600px at 80% -10%, color-mix(in oklab, var(--mint-glow) 22%, transparent), transparent),
+    radial-gradient(900px 500px at -10% 30%, color-mix(in oklab, var(--neon) 18%, transparent), transparent),
+    var(--gradient-forest);
+  --gradient-card: linear-gradient(180deg, oklch(0.26 0.035 158 / 0.78), oklch(0.2 0.035 158 / 0.55));
+  --gradient-panel-moss: linear-gradient(180deg, color-mix(in oklab, var(--moss) 70%, var(--forest-deep)), color-mix(in oklab, var(--moss) 35%, var(--forest-deep)));
+  --shadow-eco: 0 24px 60px -24px color-mix(in oklab, var(--mint-glow) 60%, transparent);
+  --shadow-glow: 0 0 0 1px color-mix(in oklab, var(--mint-glow) 36%, transparent), 0 20px 60px -20px color-mix(in oklab, var(--neon) 45%, transparent);
+  --shadow-pane: 0 30px 80px -28px rgba(0,0,0,0.55), 0 1px 0 color-mix(in oklab, var(--mint-glow) 18%, transparent) inset;
 }
 
 @layer base {
@@ -162,12 +180,13 @@
   body {
     background: var(--background);
     color: var(--foreground);
-    background-image:
-      radial-gradient(1200px 600px at 80% -10%, color-mix(in oklab, var(--neon) 10%, transparent), transparent),
-      radial-gradient(900px 500px at -10% 30%, color-mix(in oklab, var(--neon-cyan) 9%, transparent), transparent);
+    background-image: var(--gradient-hero);
     background-attachment: fixed;
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
   }
-  h1,h2,h3,h4 { font-family: var(--font-display); letter-spacing: -0.02em; }
+  h1,h2,h3,h4 { font-family: var(--font-display); letter-spacing: -0.02em; font-weight: 700; }
 }
 
 @layer components {
