@@ -44,8 +44,13 @@
   --color-neon: var(--neon);
   --color-neon-cyan: var(--neon-cyan);
   --color-neon-violet: var(--neon-violet);
-  --font-display: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
-  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --color-moss: var(--moss);
+  --color-ivory: var(--ivory);
+  --color-forest-deep: var(--forest-deep);
+  --color-forest-mid: var(--forest-mid);
+  --color-mint-glow: var(--mint-glow);
+  --font-display: "Plus Jakarta Sans", "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Plus Jakarta Sans", "Inter", ui-sans-serif, system-ui, sans-serif;
 }
 
 :root {
