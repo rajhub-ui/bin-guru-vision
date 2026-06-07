@@ -169,7 +169,7 @@ export function DisposalProofDialog({ open, onOpenChange, centre, wasteClass, de
         if (!v) reset();
       }}
     >
-      <DialogContent className="sm:max-w-lg glass-strong border-0 p-0 overflow-hidden">
+      <DialogContent className="sm:max-w-lg glass-pane dialog-cinematic border-0 p-0 overflow-hidden">
         {/* Header band */}
         <div className="relative px-6 pt-6 pb-4"
              style={{
