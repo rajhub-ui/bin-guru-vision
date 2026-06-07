@@ -209,7 +209,10 @@ function LivePage() {
               <>
                 <div className="hud-scanlines" />
                 {busy && <div className="hud-scanline-beam" />}
-                {/* Corner crosshairs */}
+                {/* Animated organic mint trace lines */}
+                <div className="mint-trace-h" />
+                <div className="mint-trace-v" />
+                {/* Organic leaf-tipped corner crosshairs */}
                 <CornerCrosshair className="top-3 left-3" />
                 <CornerCrosshair className="top-3 right-3 rotate-90" />
                 <CornerCrosshair className="bottom-3 left-3 -rotate-90" />
