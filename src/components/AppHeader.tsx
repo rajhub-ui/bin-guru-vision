@@ -32,7 +32,7 @@ export function AppHeader() {
             <span className="grid h-9 w-9 place-items-center rounded-xl bg-[var(--gradient-primary)] text-primary-foreground eco-shadow">
               <Leaf className="h-5 w-5" />
             </span>
-            <span>EcoLens<span className="eco-gradient-text"> AI</span></span>
+            <span className="title-gradient tracking-tight">EcoLens AI</span>
           </Link>
 
           {user && (
