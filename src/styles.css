@@ -44,8 +44,13 @@
   --color-neon: var(--neon);
   --color-neon-cyan: var(--neon-cyan);
   --color-neon-violet: var(--neon-violet);
-  --font-display: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
-  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --color-moss: var(--moss);
+  --color-ivory: var(--ivory);
+  --color-forest-deep: var(--forest-deep);
+  --color-forest-mid: var(--forest-mid);
+  --color-mint-glow: var(--mint-glow);
+  --font-display: "Plus Jakarta Sans", "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Plus Jakarta Sans", "Inter", ui-sans-serif, system-ui, sans-serif;
 }
 
 :root {
@@ -85,20 +90,32 @@
   --sky: oklch(0.7 0.14 220);
   --amber: oklch(0.78 0.16 80);
   --coral: oklch(0.68 0.18 28);
-  --neon: oklch(0.82 0.22 152);          /* #00E676 vibe */
-  --neon-cyan: oklch(0.83 0.16 200);     /* #00E5FF vibe */
+  --neon: oklch(0.82 0.22 152);
+  --neon-cyan: oklch(0.83 0.16 200);
   --neon-violet: oklch(0.66 0.22 295);
 
+  /* Premium Nature & Sustainable Tech tokens */
+  --moss: oklch(0.92 0.04 155);
+  --ivory: oklch(0.98 0.012 145);
+  --forest-deep: oklch(0.22 0.05 158);
+  --forest-mid: oklch(0.32 0.07 156);
+  --mint-glow: oklch(0.88 0.16 158);
+
   --gradient-hero:
-    radial-gradient(1200px 600px at 80% -10%, color-mix(in oklab, var(--neon) 14%, transparent), transparent),
-    radial-gradient(900px 500px at -10% 30%, color-mix(in oklab, var(--neon-cyan) 12%, transparent), transparent),
-    linear-gradient(135deg, oklch(0.98 0.01 150), oklch(0.96 0.02 200));
-  --gradient-primary: linear-gradient(135deg, oklch(0.7 0.2 152) 0%, oklch(0.72 0.16 195) 100%);
-  --gradient-neon: linear-gradient(135deg, #00E676 0%, #00E5FF 50%, #0084ff 100%);
-  --gradient-card: linear-gradient(180deg, oklch(1 0 0 / 0.82), oklch(1 0 0 / 0.55));
+    radial-gradient(1200px 600px at 80% -10%, color-mix(in oklab, var(--mint-glow) 18%, transparent), transparent),
+    radial-gradient(900px 500px at -10% 30%, color-mix(in oklab, var(--neon) 14%, transparent), transparent),
+    linear-gradient(135deg, var(--ivory), oklch(0.96 0.025 155));
+  --gradient-forest: linear-gradient(160deg, var(--forest-deep) 0%, var(--forest-mid) 55%, oklch(0.18 0.04 160) 100%);
+  --gradient-primary: linear-gradient(135deg, oklch(0.7 0.2 152) 0%, oklch(0.78 0.16 160) 100%);
+  --gradient-neon: linear-gradient(135deg, #00E676 0%, #34d399 50%, #10b981 100%);
+  --gradient-title: linear-gradient(135deg, oklch(0.99 0.01 150) 0%, oklch(0.92 0.12 160) 50%, oklch(0.82 0.18 158) 100%);
+  --gradient-title-light: linear-gradient(135deg, oklch(0.35 0.1 158) 0%, oklch(0.55 0.18 152) 60%, oklch(0.72 0.18 168) 100%);
+  --gradient-panel-moss: linear-gradient(180deg, color-mix(in oklab, var(--moss) 60%, white), color-mix(in oklab, var(--moss) 30%, white));
+  --gradient-card: linear-gradient(180deg, oklch(1 0 0 / 0.78), oklch(0.98 0.01 150 / 0.55));
   --shadow-eco: 0 24px 60px -24px color-mix(in oklab, var(--primary) 45%, transparent);
   --shadow-soft: 0 10px 30px -10px color-mix(in oklab, var(--foreground) 14%, transparent);
-  --shadow-glow: 0 0 0 1px color-mix(in oklab, var(--neon) 16%, transparent), 0 20px 60px -20px color-mix(in oklab, var(--neon) 30%, transparent);
+  --shadow-glow: 0 0 0 1px color-mix(in oklab, var(--mint-glow) 26%, transparent), 0 20px 60px -20px color-mix(in oklab, var(--neon) 30%, transparent);
+  --shadow-pane: 0 30px 80px -28px color-mix(in oklab, var(--forest-deep) 38%, transparent), 0 1px 0 color-mix(in oklab, white 60%, transparent) inset;
 }
 
 .dark {
@@ -111,32 +128,50 @@
   --popover: oklch(0.21 0.015 175);
   --popover-foreground: oklch(0.97 0.01 150);
 
-  --primary: oklch(0.82 0.22 152);
-  --primary-foreground: oklch(0.14 0.02 175);
-  --primary-glow: oklch(0.88 0.18 152);
+.dark {
+  /* Deep luxury forest */
+  --background: oklch(0.18 0.03 158);
+  --foreground: oklch(0.97 0.02 150);
 
-  --secondary: oklch(0.26 0.02 175);
-  --secondary-foreground: oklch(0.97 0.01 150);
-  --muted: oklch(0.24 0.015 175);
-  --muted-foreground: oklch(0.72 0.015 160);
-  --accent: oklch(0.3 0.07 160);
-  --accent-foreground: oklch(0.97 0.01 150);
+  --card: oklch(0.23 0.035 158);
+  --card-foreground: oklch(0.97 0.02 150);
+  --popover: oklch(0.23 0.035 158);
+  --popover-foreground: oklch(0.97 0.02 150);
+
+  --primary: oklch(0.82 0.22 152);
+  --primary-foreground: oklch(0.14 0.04 158);
+  --primary-glow: oklch(0.9 0.18 158);
+
+  --secondary: oklch(0.28 0.04 158);
+  --secondary-foreground: oklch(0.97 0.02 150);
+  --muted: oklch(0.26 0.03 158);
+  --muted-foreground: oklch(0.78 0.025 155);
+  --accent: oklch(0.32 0.08 158);
+  --accent-foreground: oklch(0.97 0.02 150);
   --destructive: oklch(0.66 0.22 25);
   --destructive-foreground: oklch(0.99 0 0);
-  --border: oklch(0.3 0.015 175);
-  --input: oklch(0.28 0.015 175);
+  --border: oklch(0.34 0.035 158);
+  --input: oklch(0.3 0.03 158);
   --ring: oklch(0.82 0.22 152);
 
-  --neon: oklch(0.85 0.22 152);
+  --neon: oklch(0.86 0.22 152);
   --neon-cyan: oklch(0.86 0.18 200);
 
+  --moss: oklch(0.42 0.07 158);
+  --ivory: oklch(0.96 0.015 150);
+  --forest-deep: oklch(0.14 0.035 160);
+  --forest-mid: oklch(0.22 0.05 158);
+  --mint-glow: oklch(0.86 0.2 160);
+
   --gradient-hero:
-    radial-gradient(1200px 600px at 80% -10%, color-mix(in oklab, var(--neon) 18%, transparent), transparent),
-    radial-gradient(900px 500px at -10% 30%, color-mix(in oklab, var(--neon-cyan) 14%, transparent), transparent),
-    linear-gradient(135deg, oklch(0.18 0.015 175), oklch(0.14 0.02 200));
-  --gradient-card: linear-gradient(180deg, oklch(0.23 0.015 175 / 0.78), oklch(0.2 0.015 175 / 0.55));
-  --shadow-eco: 0 24px 60px -24px color-mix(in oklab, var(--neon) 60%, transparent);
-  --shadow-glow: 0 0 0 1px color-mix(in oklab, var(--neon) 26%, transparent), 0 20px 60px -20px color-mix(in oklab, var(--neon) 45%, transparent);
+    radial-gradient(1200px 600px at 80% -10%, color-mix(in oklab, var(--mint-glow) 22%, transparent), transparent),
+    radial-gradient(900px 500px at -10% 30%, color-mix(in oklab, var(--neon) 18%, transparent), transparent),
+    var(--gradient-forest);
+  --gradient-card: linear-gradient(180deg, oklch(0.26 0.035 158 / 0.78), oklch(0.2 0.035 158 / 0.55));
+  --gradient-panel-moss: linear-gradient(180deg, color-mix(in oklab, var(--moss) 70%, var(--forest-deep)), color-mix(in oklab, var(--moss) 35%, var(--forest-deep)));
+  --shadow-eco: 0 24px 60px -24px color-mix(in oklab, var(--mint-glow) 60%, transparent);
+  --shadow-glow: 0 0 0 1px color-mix(in oklab, var(--mint-glow) 36%, transparent), 0 20px 60px -20px color-mix(in oklab, var(--neon) 45%, transparent);
+  --shadow-pane: 0 30px 80px -28px rgba(0,0,0,0.55), 0 1px 0 color-mix(in oklab, var(--mint-glow) 18%, transparent) inset;
 }
 
 @layer base {
@@ -145,25 +180,37 @@
   body {
     background: var(--background);
     color: var(--foreground);
-    background-image:
-      radial-gradient(1200px 600px at 80% -10%, color-mix(in oklab, var(--neon) 10%, transparent), transparent),
-      radial-gradient(900px 500px at -10% 30%, color-mix(in oklab, var(--neon-cyan) 9%, transparent), transparent);
+    background-image: var(--gradient-hero);
     background-attachment: fixed;
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
   }
-  h1,h2,h3,h4 { font-family: var(--font-display); letter-spacing: -0.02em; }
+  h1,h2,h3,h4 { font-family: var(--font-display); letter-spacing: -0.02em; font-weight: 700; }
 }
 
 @layer components {
   .glass {
     background: var(--gradient-card);
-    backdrop-filter: blur(18px) saturate(140%);
-    border: 1px solid color-mix(in oklab, var(--foreground) 8%, transparent);
+    backdrop-filter: blur(12px) saturate(140%);
+    border: 1px solid color-mix(in oklab, var(--mint-glow) 22%, transparent);
+    box-shadow: 0 1px 0 color-mix(in oklab, white 55%, transparent) inset;
   }
   .glass-strong {
-    background: color-mix(in oklab, var(--card) 70%, transparent);
-    backdrop-filter: blur(24px) saturate(150%);
-    border: 1px solid color-mix(in oklab, var(--neon) 18%, transparent);
-    box-shadow: 0 20px 60px -20px color-mix(in oklab, var(--neon) 18%, transparent);
+    background: color-mix(in oklab, var(--card) 72%, transparent);
+    backdrop-filter: blur(18px) saturate(160%);
+    border: 1px solid color-mix(in oklab, var(--mint-glow) 30%, transparent);
+    box-shadow:
+      0 20px 60px -22px color-mix(in oklab, var(--mint-glow) 25%, transparent),
+      0 1px 0 color-mix(in oklab, white 50%, transparent) inset;
+  }
+  /* Premium floating glass pane — used for dialogs and luxury cards */
+  .glass-pane {
+    background: var(--gradient-card);
+    backdrop-filter: blur(12px) saturate(150%);
+    border: 1px solid color-mix(in oklab, var(--mint-glow) 32%, transparent);
+    box-shadow: var(--shadow-pane);
+    border-radius: 1.25rem;
   }
   .eco-gradient-text {
     background: var(--gradient-neon);
@@ -171,11 +218,63 @@
     background-clip: text;
     color: transparent;
   }
+  /* Premium gradient title — ivory → radiant mint */
+  .title-gradient {
+    background: var(--gradient-title-light);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    letter-spacing: -0.025em;
+  }
+  .dark .title-gradient { background: var(--gradient-title); -webkit-background-clip: text; background-clip: text; }
+  /* Ultra-bold high-fashion numerals */
+  .hero-number {
+    font-family: var(--font-display);
+    font-weight: 800;
+    letter-spacing: -0.035em;
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+  }
+  /* Uppercase micro eyebrow label */
+  .eyebrow {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: color-mix(in oklab, var(--foreground) 55%, transparent);
+  }
   .eco-shadow { box-shadow: var(--shadow-eco); }
   .soft-shadow { box-shadow: var(--shadow-soft); }
   .neon-shadow { box-shadow: var(--shadow-glow); }
   .neon-border {
-    border: 1px solid color-mix(in oklab, var(--neon) 35%, transparent);
+    border: 1px solid color-mix(in oklab, var(--mint-glow) 38%, transparent);
+  }
+  /* Forest backdrop wrap for authed shells */
+  .forest-backdrop {
+    position: relative;
+  }
+  .forest-backdrop::before {
+    content: "";
+    position: fixed; inset: 0; z-index: -1;
+    background: var(--gradient-hero);
+    pointer-events: none;
+  }
+  /* Material chip — used for "accepts" badges on disposal centres */
+  .material-chip {
+    display: inline-flex; align-items: center; gap: 0.3rem;
+    padding: 0.2rem 0.55rem;
+    font-size: 0.65rem; font-weight: 700;
+    letter-spacing: 0.04em;
+    border-radius: 9999px;
+    background: color-mix(in oklab, var(--moss) 55%, var(--card));
+    color: color-mix(in oklab, var(--forest-deep) 75%, var(--foreground));
+    border: 1px solid color-mix(in oklab, var(--mint-glow) 35%, transparent);
+    text-transform: capitalize;
+    line-height: 1;
+  }
+  .dark .material-chip {
+    background: color-mix(in oklab, var(--moss) 40%, transparent);
+    color: color-mix(in oklab, var(--mint-glow) 85%, var(--foreground));
   }
 }
 
@@ -201,23 +300,72 @@
   from { transform: translateY(24px); opacity: 0; }
   to { transform: translateY(0); opacity: 1; }
 }
+@keyframes fade-cinematic {
+  from { opacity: 0; transform: translateY(12px) scale(0.97); filter: blur(6px); }
+  to { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+}
+@keyframes mint-trace-x {
+  0% { transform: translateX(-110%); opacity: 0; }
+  20% { opacity: 1; }
+  80% { opacity: 1; }
+  100% { transform: translateX(110%); opacity: 0; }
+}
+@keyframes mint-trace-y {
+  0% { transform: translateY(-110%); opacity: 0; }
+  20% { opacity: 1; }
+  80% { opacity: 1; }
+  100% { transform: translateY(110%); opacity: 0; }
+}
 
 .animate-sheet-up { animation: sheet-up 0.35s cubic-bezier(0.2,0.8,0.2,1) both; }
+.animate-cinematic { animation: fade-cinematic 0.55s cubic-bezier(0.16, 1, 0.3, 1) both; }
 
-/* HUD scanline overlay (live AR viewport) */
+/* Cinematic dialog skin — applied on top of Radix DialogContent */
+.dialog-cinematic {
+  animation: fade-cinematic 0.5s cubic-bezier(0.16, 1, 0.3, 1) both !important;
+  border: 1px solid color-mix(in oklab, var(--mint-glow) 34%, transparent) !important;
+  box-shadow:
+    0 40px 100px -28px rgba(0,0,0,0.55),
+    0 0 0 1px color-mix(in oklab, var(--mint-glow) 18%, transparent),
+    0 1px 0 color-mix(in oklab, white 40%, transparent) inset !important;
+  backdrop-filter: blur(16px) saturate(160%);
+}
+
+/* HUD scanline overlay (live AR viewport) — mint/emerald tint */
 .hud-scanlines {
   position: absolute; inset: 0; pointer-events: none;
   background:
-    repeating-linear-gradient(0deg, rgba(0,229,255,0.04) 0 2px, transparent 2px 4px),
-    radial-gradient(120% 80% at 50% 50%, transparent 60%, rgba(0,0,0,0.55) 100%);
+    repeating-linear-gradient(0deg, rgba(52,211,153,0.05) 0 2px, transparent 2px 4px),
+    radial-gradient(120% 80% at 50% 50%, transparent 60%, rgba(0,30,15,0.55) 100%);
   mix-blend-mode: screen;
 }
 .hud-scanline-beam {
   position: absolute; left: 0; right: 0; height: 18%;
-  background: linear-gradient(180deg, transparent, rgba(0,230,118,0.18), transparent);
+  background: linear-gradient(180deg, transparent, rgba(0,230,118,0.22), transparent);
   animation: hud-scan 3.4s linear infinite;
   pointer-events: none;
 }
+
+/* Organic targeting trace lines (live AR) */
+.mint-trace-h, .mint-trace-v {
+  position: absolute;
+  pointer-events: none;
+  background: linear-gradient(90deg, transparent, rgba(0,230,118,0.85), transparent);
+  filter: drop-shadow(0 0 6px rgba(0,230,118,0.6));
+}
+.mint-trace-h {
+  left: 0; right: 0; height: 2px;
+  top: 50%;
+  animation: mint-trace-y 3.6s ease-in-out infinite;
+}
+.mint-trace-v {
+  top: 0; bottom: 0; width: 2px;
+  left: 50%;
+  background: linear-gradient(180deg, transparent, rgba(0,230,118,0.85), transparent);
+  animation: mint-trace-x 4.4s ease-in-out infinite;
+  animation-delay: 0.6s;
+}
+
 
 /* HUD crosshair corners (decorative around camera viewport) */
 .hud-frame::before, .hud-frame::after,

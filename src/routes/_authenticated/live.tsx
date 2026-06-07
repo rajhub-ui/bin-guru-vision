@@ -156,8 +156,11 @@ function LivePage() {
     <div className="max-w-6xl mx-auto">
       <header className="mb-6 flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="text-4xl font-bold flex items-center gap-2">
-            Live AR detection <Sparkles className="h-6 w-6 text-primary" />
+          <div className="eyebrow flex items-center gap-2 mb-2">
+            <Sparkles className="h-3 w-3 text-primary" /> Live AR Console
+          </div>
+          <h1 className="text-4xl md:text-5xl font-bold tracking-tight title-gradient">
+            Live AR detection
           </h1>
           <p className="text-muted-foreground mt-2">
             Point your camera at one or more items — EcoLens overlays AR boxes around each one.
@@ -209,7 +212,10 @@ function LivePage() {
               <>
                 <div className="hud-scanlines" />
                 {busy && <div className="hud-scanline-beam" />}
-                {/* Corner crosshairs */}
+                {/* Animated organic mint trace lines */}
+                <div className="mint-trace-h" />
+                <div className="mint-trace-v" />
+                {/* Organic leaf-tipped corner crosshairs */}
                 <CornerCrosshair className="top-3 left-3" />
                 <CornerCrosshair className="top-3 right-3 rotate-90" />
                 <CornerCrosshair className="bottom-3 left-3 -rotate-90" />
@@ -325,16 +331,24 @@ function LivePage() {
 }
 
 function CornerCrosshair({ className = "" }: { className?: string }) {
+  // Organic leaf-tipped targeting mark — SVG so we can use rounded leaf curves.
   return (
-    <span
+    <svg
       aria-hidden
-      className={`pointer-events-none absolute h-6 w-6 ${className}`}
-      style={{
-        borderTop: "2px solid #00E676",
-        borderLeft: "2px solid #00E676",
-        boxShadow: "0 0 10px rgba(0,230,118,0.6)",
-      }}
-    />
+      viewBox="0 0 40 40"
+      className={`pointer-events-none absolute h-8 w-8 ${className}`}
+      style={{ filter: "drop-shadow(0 0 6px rgba(0,230,118,0.65))" }}
+    >
+      <path
+        d="M4 18 Q4 4 18 4"
+        fill="none"
+        stroke="#34d399"
+        strokeWidth="2.5"
+        strokeLinecap="round"
+      />
+      <circle cx="4" cy="18" r="2" fill="#00E676" />
+      <circle cx="18" cy="4" r="2" fill="#00E676" />
+    </svg>
   );
 }
 

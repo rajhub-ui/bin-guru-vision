@@ -123,11 +123,11 @@ function DashboardPage() {
       {/* Hero header */}
       <header className="mb-8 flex flex-wrap items-end justify-between gap-4">
         <div>
-          <div className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground flex items-center gap-2 mb-2">
-            <Sparkles className="h-3.5 w-3.5 text-primary" /> Environmental Command Hub
+          <div className="eyebrow flex items-center gap-2 mb-2">
+            <Sparkles className="h-3 w-3 text-primary" /> Environmental Command Hub
           </div>
           <h1 className="text-4xl md:text-5xl font-bold tracking-tight">
-            Hi {name || "eco warrior"}, <span className="eco-gradient-text">let's make impact.</span>
+            Hi {name || "eco warrior"}, <span className="title-gradient">let's make impact.</span>
           </h1>
           <p className="text-muted-foreground mt-2 max-w-xl">
             Your gamified sustainability mission control — points, mass segregated, streaks and rewards.
@@ -166,7 +166,7 @@ function DashboardPage() {
                 <Wallet className="h-3.5 w-3.5" /> Eco Points Wallet
               </div>
               <div className="mt-3 flex items-baseline gap-2 text-white">
-                <span className="font-display text-6xl md:text-7xl font-bold">
+                <span className="hero-number text-6xl md:text-7xl">
                   {ecoScore.toLocaleString()}
                 </span>
                 <span className="text-emerald-300/80 text-sm font-semibold">pts</span>
@@ -343,7 +343,7 @@ function MetricCard({
           </span>
           <ArrowUpRight className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition" />
         </div>
-        <div className="mt-3 text-3xl font-bold font-display tabular-nums">{value}</div>
+        <div className="mt-3 hero-number text-3xl">{value}</div>
         <div className="text-sm text-muted-foreground">{label}</div>
         {sublabel && <div className="mt-1 text-xs text-muted-foreground/80">{sublabel}</div>}
       </div>
