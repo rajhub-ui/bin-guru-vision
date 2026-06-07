@@ -99,21 +99,23 @@ export function NearbyDisposal({ wasteClass, compact = false, detectionId }: Nea
   }
 
   return (
-    <div className="glass-strong rounded-3xl p-5 md:p-6 mt-6">
-      <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
-        <h3 className="font-display text-xl font-semibold flex items-center gap-2">
-          <span className="grid h-9 w-9 place-items-center rounded-xl bg-background/60 border">
-            <MapPin className="h-4 w-4 text-primary" />
-          </span>
-          Nearby disposal centres
+    <div className="glass-pane p-5 md:p-6 mt-6">
+      <div className="flex items-end justify-between mb-5 flex-wrap gap-3">
+        <div>
+          <div className="eyebrow flex items-center gap-2 mb-1.5">
+            <MapPin className="h-3 w-3 text-primary" /> Bengaluru Network
+          </div>
+          <h3 className="font-display text-2xl md:text-3xl font-bold title-gradient">
+            Nearby disposal centres
+          </h3>
           {wasteClass && (
-            <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-accent text-accent-foreground capitalize">
-              {wasteClass}
+            <span className="mt-2 inline-flex items-center text-[11px] font-bold tracking-wide px-2.5 py-1 rounded-full bg-accent text-accent-foreground capitalize">
+              Filtered · {wasteClass}
             </span>
           )}
-        </h3>
-        <span className="text-xs text-muted-foreground tabular-nums">
-          {centres.length} across Bengaluru
+        </div>
+        <span className="eyebrow tabular-nums">
+          {centres.length} centres
         </span>
       </div>
 
