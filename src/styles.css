@@ -90,20 +90,32 @@
   --sky: oklch(0.7 0.14 220);
   --amber: oklch(0.78 0.16 80);
   --coral: oklch(0.68 0.18 28);
-  --neon: oklch(0.82 0.22 152);          /* #00E676 vibe */
-  --neon-cyan: oklch(0.83 0.16 200);     /* #00E5FF vibe */
+  --neon: oklch(0.82 0.22 152);
+  --neon-cyan: oklch(0.83 0.16 200);
   --neon-violet: oklch(0.66 0.22 295);
 
+  /* Premium Nature & Sustainable Tech tokens */
+  --moss: oklch(0.92 0.04 155);
+  --ivory: oklch(0.98 0.012 145);
+  --forest-deep: oklch(0.22 0.05 158);
+  --forest-mid: oklch(0.32 0.07 156);
+  --mint-glow: oklch(0.88 0.16 158);
+
   --gradient-hero:
-    radial-gradient(1200px 600px at 80% -10%, color-mix(in oklab, var(--neon) 14%, transparent), transparent),
-    radial-gradient(900px 500px at -10% 30%, color-mix(in oklab, var(--neon-cyan) 12%, transparent), transparent),
-    linear-gradient(135deg, oklch(0.98 0.01 150), oklch(0.96 0.02 200));
-  --gradient-primary: linear-gradient(135deg, oklch(0.7 0.2 152) 0%, oklch(0.72 0.16 195) 100%);
-  --gradient-neon: linear-gradient(135deg, #00E676 0%, #00E5FF 50%, #0084ff 100%);
-  --gradient-card: linear-gradient(180deg, oklch(1 0 0 / 0.82), oklch(1 0 0 / 0.55));
+    radial-gradient(1200px 600px at 80% -10%, color-mix(in oklab, var(--mint-glow) 18%, transparent), transparent),
+    radial-gradient(900px 500px at -10% 30%, color-mix(in oklab, var(--neon) 14%, transparent), transparent),
+    linear-gradient(135deg, var(--ivory), oklch(0.96 0.025 155));
+  --gradient-forest: linear-gradient(160deg, var(--forest-deep) 0%, var(--forest-mid) 55%, oklch(0.18 0.04 160) 100%);
+  --gradient-primary: linear-gradient(135deg, oklch(0.7 0.2 152) 0%, oklch(0.78 0.16 160) 100%);
+  --gradient-neon: linear-gradient(135deg, #00E676 0%, #34d399 50%, #10b981 100%);
+  --gradient-title: linear-gradient(135deg, oklch(0.99 0.01 150) 0%, oklch(0.92 0.12 160) 50%, oklch(0.82 0.18 158) 100%);
+  --gradient-title-light: linear-gradient(135deg, oklch(0.35 0.1 158) 0%, oklch(0.55 0.18 152) 60%, oklch(0.72 0.18 168) 100%);
+  --gradient-panel-moss: linear-gradient(180deg, color-mix(in oklab, var(--moss) 60%, white), color-mix(in oklab, var(--moss) 30%, white));
+  --gradient-card: linear-gradient(180deg, oklch(1 0 0 / 0.78), oklch(0.98 0.01 150 / 0.55));
   --shadow-eco: 0 24px 60px -24px color-mix(in oklab, var(--primary) 45%, transparent);
   --shadow-soft: 0 10px 30px -10px color-mix(in oklab, var(--foreground) 14%, transparent);
-  --shadow-glow: 0 0 0 1px color-mix(in oklab, var(--neon) 16%, transparent), 0 20px 60px -20px color-mix(in oklab, var(--neon) 30%, transparent);
+  --shadow-glow: 0 0 0 1px color-mix(in oklab, var(--mint-glow) 26%, transparent), 0 20px 60px -20px color-mix(in oklab, var(--neon) 30%, transparent);
+  --shadow-pane: 0 30px 80px -28px color-mix(in oklab, var(--forest-deep) 38%, transparent), 0 1px 0 color-mix(in oklab, white 60%, transparent) inset;
 }
 
 .dark {
