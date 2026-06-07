@@ -166,7 +166,7 @@ function DashboardPage() {
                 <Wallet className="h-3.5 w-3.5" /> Eco Points Wallet
               </div>
               <div className="mt-3 flex items-baseline gap-2 text-white">
-                <span className="font-display text-6xl md:text-7xl font-bold">
+                <span className="hero-number text-6xl md:text-7xl">
                   {ecoScore.toLocaleString()}
                 </span>
                 <span className="text-emerald-300/80 text-sm font-semibold">pts</span>
