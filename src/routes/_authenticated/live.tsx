@@ -156,8 +156,11 @@ function LivePage() {
     <div className="max-w-6xl mx-auto">
       <header className="mb-6 flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="text-4xl font-bold flex items-center gap-2">
-            Live AR detection <Sparkles className="h-6 w-6 text-primary" />
+          <div className="eyebrow flex items-center gap-2 mb-2">
+            <Sparkles className="h-3 w-3 text-primary" /> Live AR Console
+          </div>
+          <h1 className="text-4xl md:text-5xl font-bold tracking-tight title-gradient">
+            Live AR detection
           </h1>
           <p className="text-muted-foreground mt-2">
             Point your camera at one or more items — EcoLens overlays AR boxes around each one.
