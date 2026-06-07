@@ -343,7 +343,7 @@ function MetricCard({
           </span>
           <ArrowUpRight className="h-4 w-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition" />
         </div>
-        <div className="mt-3 text-3xl font-bold font-display tabular-nums">{value}</div>
+        <div className="mt-3 hero-number text-3xl">{value}</div>
         <div className="text-sm text-muted-foreground">{label}</div>
         {sublabel && <div className="mt-1 text-xs text-muted-foreground/80">{sublabel}</div>}
       </div>
