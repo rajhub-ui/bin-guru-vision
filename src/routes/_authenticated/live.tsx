@@ -328,16 +328,24 @@ function LivePage() {
 }
 
 function CornerCrosshair({ className = "" }: { className?: string }) {
+  // Organic leaf-tipped targeting mark — SVG so we can use rounded leaf curves.
   return (
-    <span
+    <svg
       aria-hidden
-      className={`pointer-events-none absolute h-6 w-6 ${className}`}
-      style={{
-        borderTop: "2px solid #00E676",
-        borderLeft: "2px solid #00E676",
-        boxShadow: "0 0 10px rgba(0,230,118,0.6)",
-      }}
-    />
+      viewBox="0 0 40 40"
+      className={`pointer-events-none absolute h-8 w-8 ${className}`}
+      style={{ filter: "drop-shadow(0 0 6px rgba(0,230,118,0.65))" }}
+    >
+      <path
+        d="M4 18 Q4 4 18 4"
+        fill="none"
+        stroke="#34d399"
+        strokeWidth="2.5"
+        strokeLinecap="round"
+      />
+      <circle cx="4" cy="18" r="2" fill="#00E676" />
+      <circle cx="18" cy="4" r="2" fill="#00E676" />
+    </svg>
   );
 }
 
