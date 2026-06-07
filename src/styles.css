@@ -192,14 +192,25 @@
 @layer components {
   .glass {
     background: var(--gradient-card);
-    backdrop-filter: blur(18px) saturate(140%);
-    border: 1px solid color-mix(in oklab, var(--foreground) 8%, transparent);
+    backdrop-filter: blur(12px) saturate(140%);
+    border: 1px solid color-mix(in oklab, var(--mint-glow) 22%, transparent);
+    box-shadow: 0 1px 0 color-mix(in oklab, white 55%, transparent) inset;
   }
   .glass-strong {
-    background: color-mix(in oklab, var(--card) 70%, transparent);
-    backdrop-filter: blur(24px) saturate(150%);
-    border: 1px solid color-mix(in oklab, var(--neon) 18%, transparent);
-    box-shadow: 0 20px 60px -20px color-mix(in oklab, var(--neon) 18%, transparent);
+    background: color-mix(in oklab, var(--card) 72%, transparent);
+    backdrop-filter: blur(18px) saturate(160%);
+    border: 1px solid color-mix(in oklab, var(--mint-glow) 30%, transparent);
+    box-shadow:
+      0 20px 60px -22px color-mix(in oklab, var(--mint-glow) 25%, transparent),
+      0 1px 0 color-mix(in oklab, white 50%, transparent) inset;
+  }
+  /* Premium floating glass pane — used for dialogs and luxury cards */
+  .glass-pane {
+    background: var(--gradient-card);
+    backdrop-filter: blur(12px) saturate(150%);
+    border: 1px solid color-mix(in oklab, var(--mint-glow) 32%, transparent);
+    box-shadow: var(--shadow-pane);
+    border-radius: 1.25rem;
   }
   .eco-gradient-text {
     background: var(--gradient-neon);
@@ -207,11 +218,63 @@
     background-clip: text;
     color: transparent;
   }
+  /* Premium gradient title — ivory → radiant mint */
+  .title-gradient {
+    background: var(--gradient-title-light);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    letter-spacing: -0.025em;
+  }
+  .dark .title-gradient { background: var(--gradient-title); -webkit-background-clip: text; background-clip: text; }
+  /* Ultra-bold high-fashion numerals */
+  .hero-number {
+    font-family: var(--font-display);
+    font-weight: 800;
+    letter-spacing: -0.035em;
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+  }
+  /* Uppercase micro eyebrow label */
+  .eyebrow {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: color-mix(in oklab, var(--foreground) 55%, transparent);
+  }
   .eco-shadow { box-shadow: var(--shadow-eco); }
   .soft-shadow { box-shadow: var(--shadow-soft); }
   .neon-shadow { box-shadow: var(--shadow-glow); }
   .neon-border {
-    border: 1px solid color-mix(in oklab, var(--neon) 35%, transparent);
+    border: 1px solid color-mix(in oklab, var(--mint-glow) 38%, transparent);
+  }
+  /* Forest backdrop wrap for authed shells */
+  .forest-backdrop {
+    position: relative;
+  }
+  .forest-backdrop::before {
+    content: "";
+    position: fixed; inset: 0; z-index: -1;
+    background: var(--gradient-hero);
+    pointer-events: none;
+  }
+  /* Material chip — used for "accepts" badges on disposal centres */
+  .material-chip {
+    display: inline-flex; align-items: center; gap: 0.3rem;
+    padding: 0.2rem 0.55rem;
+    font-size: 0.65rem; font-weight: 700;
+    letter-spacing: 0.04em;
+    border-radius: 9999px;
+    background: color-mix(in oklab, var(--moss) 55%, var(--card));
+    color: color-mix(in oklab, var(--forest-deep) 75%, var(--foreground));
+    border: 1px solid color-mix(in oklab, var(--mint-glow) 35%, transparent);
+    text-transform: capitalize;
+    line-height: 1;
+  }
+  .dark .material-chip {
+    background: color-mix(in oklab, var(--moss) 40%, transparent);
+    color: color-mix(in oklab, var(--mint-glow) 85%, var(--foreground));
   }
 }
 
