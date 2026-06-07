@@ -141,37 +141,57 @@ export function NearbyDisposal({ wasteClass, compact = false, detectionId }: Nea
             return (
               <li
                 key={c.id}
-                className="rounded-2xl border bg-card/80 backdrop-blur p-3.5 hover:border-primary/40 transition group"
+                className="glass-pane p-4 hover:border-primary/50 transition group animate-cinematic"
               >
                 <div className="flex items-start gap-3">
-                  <span className="relative mt-0.5 inline-block">
+                  <span className="relative mt-1 inline-block">
                     <span className="eco-pin" style={{ width: 14, height: 14 }} />
                   </span>
                   <div className="flex-1 min-w-0">
-                    <div className="text-sm font-semibold leading-tight">{c.name}</div>
+                    <div className="text-sm font-bold leading-tight tracking-tight">{c.name}</div>
                     <div className="text-[11px] text-muted-foreground mt-0.5 truncate">
                       {c.address}
                     </div>
                   </div>
                 </div>
 
-                {/* Ledger row */}
+                {/* Accepted material badges */}
+                <div className="mt-3 flex flex-wrap gap-1.5">
+                  {c.accepts.slice(0, 6).map((cls) => {
+                    const info = DISPOSAL[cls as WasteClass];
+                    return (
+                      <span key={cls} className="material-chip">
+                        <span aria-hidden>{info?.emoji ?? "♻️"}</span>
+                        {info?.label ?? cls}
+                      </span>
+                    );
+                  })}
+                  {c.accepts.length > 6 && (
+                    <span className="material-chip">+{c.accepts.length - 6}</span>
+                  )}
+                </div>
+
+                {/* Ledger row — hero-number stats */}
                 <dl className="mt-3 grid grid-cols-3 gap-2 text-[11px]">
-                  <div className="rounded-lg bg-muted/60 px-2 py-1.5">
-                    <dt className="uppercase tracking-wider text-muted-foreground/80">Dist.</dt>
-                    <dd className="font-semibold tabular-nums">{c.distance_km.toFixed(1)} km</dd>
+                  <div className="rounded-xl bg-muted/60 px-2.5 py-2 border border-border/50">
+                    <dt className="eyebrow text-[9px]">Dist.</dt>
+                    <dd className="hero-number text-base mt-1">
+                      {c.distance_km.toFixed(1)}<span className="text-[10px] font-semibold text-muted-foreground ml-1">km</span>
+                    </dd>
                   </div>
-                  <div className="rounded-lg bg-muted/60 px-2 py-1.5">
-                    <dt className="uppercase tracking-wider text-muted-foreground/80 flex items-center gap-1">
-                      <Footprints className="h-3 w-3" /> Walk
+                  <div className="rounded-xl bg-muted/60 px-2.5 py-2 border border-border/50">
+                    <dt className="eyebrow text-[9px] flex items-center gap-1">
+                      <Footprints className="h-2.5 w-2.5" /> Walk
                     </dt>
-                    <dd className="font-semibold tabular-nums">{minutes} min</dd>
+                    <dd className="hero-number text-base mt-1">
+                      {minutes}<span className="text-[10px] font-semibold text-muted-foreground ml-1">min</span>
+                    </dd>
                   </div>
-                  <div className="rounded-lg bg-muted/60 px-2 py-1.5">
-                    <dt className="uppercase tracking-wider text-muted-foreground/80 flex items-center gap-1">
-                      <Clock className="h-3 w-3" /> Status
+                  <div className="rounded-xl bg-muted/60 px-2.5 py-2 border border-border/50">
+                    <dt className="eyebrow text-[9px] flex items-center gap-1">
+                      <Clock className="h-2.5 w-2.5" /> Status
                     </dt>
-                    <dd className={`font-semibold ${status.open ? "text-emerald-600 dark:text-emerald-400" : "text-muted-foreground"}`}>
+                    <dd className={`hero-number text-sm mt-1 ${status.open ? "text-emerald-600 dark:text-emerald-400" : "text-muted-foreground"}`}>
                       {status.open ? "Open" : "Closed"}
                     </dd>
                   </div>
