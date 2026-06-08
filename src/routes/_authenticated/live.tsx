@@ -122,6 +122,8 @@ function LivePage() {
       const v = videoRef.current;
       const c = captureRef.current;
       if (!v || !c || busy || v.videoWidth === 0) return;
+      // Freeze detections until the user clears them — keeps the result panel visible
+      if (items.length > 0) return;
       setBusy(true);
       c.width = 640;
       c.height = (640 * v.videoHeight) / v.videoWidth;
