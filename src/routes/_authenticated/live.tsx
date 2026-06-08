@@ -258,67 +258,152 @@ function LivePage() {
           <canvas ref={captureRef} className="hidden" />
         </div>
 
-
-        <div className="lg:col-span-2 glass-strong rounded-3xl p-5 md:p-6 animate-sheet-up">
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="font-display text-lg font-semibold">Material taxonomy</h2>
-            <span className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
-              Live HUD
-            </span>
-          </div>
-          {items.length === 0 ? (
-            <div className="text-center py-10 rounded-2xl border border-dashed">
-              <div className="text-3xl mb-2">🔭</div>
-              <p className="text-sm text-muted-foreground">Hold one or more items in frame…</p>
+        {/* ── Side panel: active detection summary ── */}
+        <div className="lg:col-span-2 flex flex-col gap-5">
+          <div className="glass-strong rounded-3xl p-5 md:p-6 animate-sheet-up flex-1">
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="font-display text-lg font-semibold">Detection summary</h2>
+              <span className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
+                Live HUD
+              </span>
             </div>
-          ) : (
-            <div className="space-y-3 max-h-[560px] overflow-y-auto pr-1">
-              {items.map((it, i) => {
-                const d = DISPOSAL[it.class];
-                const dec = DECOMPOSITION[it.class];
-                const mat = MATERIALS[it.class];
-                const color = CLASS_COLORS[it.class];
-                const focused = i === activeIdx;
-                return (
-                  <button
-                    key={i}
-                    type="button"
-                    onClick={() => {
-                      setActiveIdx(i);
-                      setFocusQuery(`Tell me specifically about the ${it.label} (${it.class}) — bin, hazards, how to recycle it.`);
-                    }}
-                    className={`w-full text-left rounded-2xl border p-3 bg-card/80 backdrop-blur transition animate-sheet-up ${focused ? "ring-2 ring-primary border-primary/40" : "hover:bg-accent/30"}`}
-                    style={{ borderLeft: `4px solid ${color}` }}
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="grid h-10 w-10 place-items-center rounded-xl bg-accent text-xl">
-                        {d.emoji}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="font-semibold truncate">{it.label}</div>
-                        <div className="text-xs text-muted-foreground capitalize">
-                          {d.label} · {d.bin}
+
+            {items.length === 0 ? (
+              <div className="text-center py-10 rounded-2xl border border-dashed">
+                <div className="text-3xl mb-2">🔭</div>
+                <p className="text-sm text-muted-foreground">Hold one or more items in frame…</p>
+              </div>
+            ) : (
+              <div className="space-y-3 max-h-[520px] overflow-y-auto pr-1">
+                {items.map((it, i) => {
+                  const d = DISPOSAL[it.class];
+                  const color = CLASS_COLORS[it.class];
+                  const focused = i === activeIdx;
+                  const conf = Math.round(it.confidence * 100);
+                  return (
+                    <button
+                      key={i}
+                      type="button"
+                      onClick={() => {
+                        setActiveIdx(i);
+                        setFocusQuery(`Tell me specifically about the ${it.label} (${it.class}) — bin, hazards, how to recycle it.`);
+                      }}
+                      className={`w-full text-left rounded-2xl border p-4 bg-card/80 backdrop-blur transition animate-sheet-up ${focused ? "ring-2 ring-primary border-primary/40" : "hover:bg-accent/30"}`}
+                      style={{ borderLeft: `4px solid ${color}` }}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="grid h-10 w-10 place-items-center rounded-xl bg-accent text-xl">
+                          {d.emoji}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="font-semibold truncate">{it.label}</div>
+                          <div className="text-xs text-muted-foreground capitalize">
+                            {d.label}
+                          </div>
+                        </div>
+                        <div className="text-xs tabular-nums font-mono px-2 py-1 rounded-md bg-background border">
+                          {conf}%
                         </div>
                       </div>
-                      <div className="text-xs tabular-nums font-mono px-2 py-1 rounded-md bg-background border">
-                        {Math.round(it.confidence * 100)}%
-                      </div>
-                    </div>
-                    <div className="mt-3 rounded-xl border bg-background/60 p-3 text-xs space-y-1.5">
-                      <div><span className="font-semibold text-primary">Material:</span> <span className="text-muted-foreground">{mat.composition}</span></div>
-                      <div><span className="font-semibold text-primary">How it's made:</span> <span className="text-muted-foreground">{mat.manufacturing}</span></div>
-                      <div><span className="font-semibold text-primary">Decomposes in:</span> <span className="text-muted-foreground">{dec.time}</span></div>
-                      <div><span className="font-semibold text-primary">Recycling method:</span> <span className="text-muted-foreground">{dec.method}</span></div>
-                      <div><span className="font-semibold text-primary">Becomes:</span> <span className="text-muted-foreground">{mat.recycledInto}</span></div>
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
-          )}
-        </div>
 
+                      {/* Confidence bar */}
+                      <div className="mt-3">
+                        <div className="flex justify-between text-[10px] uppercase tracking-wider font-semibold text-muted-foreground mb-1">
+                          <span>Confidence</span>
+                          <span style={{ color }}>{conf}%</span>
+                        </div>
+                        <div className="h-2 w-full rounded-full bg-muted overflow-hidden">
+                          <div
+                            className="h-full rounded-full transition-all duration-700 ease-out"
+                            style={{ width: `${conf}%`, background: color }}
+                          />
+                        </div>
+                      </div>
+
+                      {/* Disposal recommendation */}
+                      <div className="mt-3 rounded-xl border bg-background/60 p-3 space-y-2">
+                        <div className="flex items-center gap-2 text-sm font-semibold text-primary">
+                          <span className="inline-block w-1.5 h-1.5 rounded-full" style={{ background: color }} />
+                          {d.bin}
+                        </div>
+                        <ul className="space-y-1">
+                          {d.instructions.slice(0, 3).map((inst, idx) => (
+                            <li key={idx} className="text-xs text-muted-foreground flex items-start gap-2">
+                              <span className="mt-0.5 text-[10px]" style={{ color }}>➜</span>
+                              {inst}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        </div>
       </div>
+
+      {/* ── Bottom panel: active item detail bar ── */}
+      {items.length > 0 && (
+        <div className="glass-pane rounded-2xl p-4 md:p-5 animate-sheet-up mt-6">
+          {(() => {
+            const it = items[Math.min(activeIdx, items.length - 1)];
+            const d = DISPOSAL[it.class];
+            const dec = DECOMPOSITION[it.class];
+            const mat = MATERIALS[it.class];
+            const color = CLASS_COLORS[it.class];
+            const conf = Math.round(it.confidence * 100);
+            return (
+              <div className="flex flex-col md:flex-row md:items-center gap-4 md:gap-6">
+                {/* Class badge */}
+                <div className="flex items-center gap-3 shrink-0">
+                  <div className="grid h-12 w-12 place-items-center rounded-2xl text-2xl" style={{ background: `${color}22`, border: `1px solid ${color}44` }}>
+                    {d.emoji}
+                  </div>
+                  <div>
+                    <div className="font-display font-bold text-lg leading-tight">{it.label}</div>
+                    <div className="text-xs text-muted-foreground capitalize">{d.label} · {d.recyclable ? "Recyclable" : "Special disposal"}</div>
+                  </div>
+                </div>
+
+                {/* Confidence */}
+                <div className="md:w-40 shrink-0">
+                  <div className="flex justify-between text-[10px] uppercase tracking-wider font-semibold text-muted-foreground mb-1">
+                    <span>Confidence</span>
+                    <span style={{ color }}>{conf}%</span>
+                  </div>
+                  <div className="h-2.5 w-full rounded-full bg-muted overflow-hidden">
+                    <div
+                      className="h-full rounded-full transition-all duration-700 ease-out"
+                      style={{ width: `${conf}%`, background: color }}
+                    />
+                  </div>
+                </div>
+
+                {/* Disposal recommendation */}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 text-sm font-semibold text-primary mb-1.5">
+                    <span className="inline-block w-1.5 h-1.5 rounded-full" style={{ background: color }} />
+                    {d.bin}
+                  </div>
+                  <div className="text-xs text-muted-foreground line-clamp-2">
+                    {d.instructions[0]} Decomposes in {dec.time}. {mat.recycledInto}
+                  </div>
+                </div>
+
+                {/* Carbon saved */}
+                <div className="shrink-0 text-right">
+                  <div className="hero-number text-2xl" style={{ color }}>
+                    {d.carbonGramsSaved}
+                  </div>
+                  <div className="text-[10px] uppercase tracking-wider font-semibold text-muted-foreground">g CO₂ saved</div>
+                </div>
+              </div>
+            );
+          })()}
+        </div>
+      )}
 
       {items.length > 0 && (
         <NearbyDisposal
