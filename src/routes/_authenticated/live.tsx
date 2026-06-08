@@ -150,7 +150,7 @@ function LivePage() {
     return () => {
       if (intervalRef.current) window.clearInterval(intervalRef.current);
     };
-  }, [running, busy]);
+  }, [running, busy, items.length]);
 
   useEffect(() => () => stop(), []);
 
