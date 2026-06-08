@@ -122,6 +122,8 @@ function LivePage() {
       const v = videoRef.current;
       const c = captureRef.current;
       if (!v || !c || busy || v.videoWidth === 0) return;
+      // Freeze detections until the user clears them — keeps the result panel visible
+      if (items.length > 0) return;
       setBusy(true);
       c.width = 640;
       c.height = (640 * v.videoHeight) / v.videoWidth;
@@ -148,7 +150,7 @@ function LivePage() {
     return () => {
       if (intervalRef.current) window.clearInterval(intervalRef.current);
     };
-  }, [running, busy]);
+  }, [running, busy, items.length]);
 
   useEffect(() => () => stop(), []);
 
@@ -240,8 +242,16 @@ function LivePage() {
               </div>
             )}
             {running && items.length > 0 && (
-              <div className="absolute bottom-3 left-3 bg-black/60 backdrop-blur border border-white/10 text-white rounded-full px-3 py-1 text-xs font-semibold">
-                {items.length} item{items.length > 1 ? "s" : ""} detected
+              <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between gap-2">
+                <div className="bg-black/60 backdrop-blur border border-emerald-400/30 text-white rounded-full px-3 py-1 text-xs font-semibold">
+                  {items.length} item{items.length > 1 ? "s" : ""} detected · paused
+                </div>
+                <button
+                  onClick={() => { setItems([]); setDetectionIds([]); setFocusQuery(null); }}
+                  className="bg-emerald-500/90 hover:bg-emerald-500 text-black font-semibold rounded-full px-3 py-1 text-xs backdrop-blur border border-emerald-300/60 shadow"
+                >
+                  Clear & scan again
+                </button>
               </div>
             )}
           </div>
