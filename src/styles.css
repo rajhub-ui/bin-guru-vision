@@ -118,15 +118,6 @@
   --shadow-pane: 0 30px 80px -28px color-mix(in oklab, var(--forest-deep) 38%, transparent), 0 1px 0 color-mix(in oklab, white 60%, transparent) inset;
 }
 
-.dark {
-  /* Deep sophisticated charcoal */
-  --background: oklch(0.16 0.012 175);
-  --foreground: oklch(0.97 0.01 150);
-
-  --card: oklch(0.21 0.015 175);
-  --card-foreground: oklch(0.97 0.01 150);
-  --popover: oklch(0.21 0.015 175);
-  --popover-foreground: oklch(0.97 0.01 150);
 
 .dark {
   /* Deep luxury forest */
