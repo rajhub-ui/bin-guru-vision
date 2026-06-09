@@ -75,10 +75,31 @@ function PdfPage() {
 
         const res = await classifyCanvas(canvas);
         const items = res.error || res.fallback ? [] : res.items;
+
+        // Build per-item crops from normalized box coords (with small padding)
+        const itemCrops: string[] = items.map((it) => {
+          if (!it.box) return "";
+          const [bx, by, bw, bh] = it.box;
+          const pad = 0.04;
+          const x = Math.max(0, (bx - pad) * canvas.width);
+          const y = Math.max(0, (by - pad) * canvas.height);
+          const w = Math.min(canvas.width - x, (bw + pad * 2) * canvas.width);
+          const h = Math.min(canvas.height - y, (bh + pad * 2) * canvas.height);
+          if (w < 10 || h < 10) return "";
+          const c = document.createElement("canvas");
+          c.width = Math.round(w);
+          c.height = Math.round(h);
+          c.getContext("2d")!.drawImage(canvas, x, y, w, h, 0, 0, c.width, c.height);
+          return c.toDataURL("image/jpeg", 0.8);
+        });
+
         out.push({
           pageNumber: p,
           thumbnail: canvas.toDataURL("image/jpeg", 0.7),
+          thumbWidth: canvas.width,
+          thumbHeight: canvas.height,
           items,
+          itemCrops,
           summary: res.summary || "",
         });
         setPages([...out]);
