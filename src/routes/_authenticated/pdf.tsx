@@ -126,77 +126,268 @@ function PdfPage() {
     const doc = new jsPDF({ unit: "pt", format: "a4" });
     const pageW = doc.internal.pageSize.getWidth();
     const pageH = doc.internal.pageSize.getHeight();
-    const margin = 40;
-    let y = margin;
+    const margin = 44;
+    const contentW = pageW - margin * 2;
 
-    doc.setFillColor(34, 139, 87);
-    doc.rect(0, 0, pageW, 60, "F");
-    doc.setTextColor(255);
+    const drawHeaderBand = (title: string, subtitle: string) => {
+      doc.setFillColor(34, 139, 87);
+      doc.rect(0, 0, pageW, 72, "F");
+      doc.setFillColor(46, 160, 105);
+      doc.rect(0, 68, pageW, 4, "F");
+      doc.setTextColor(255);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(20);
+      doc.text(title, margin, 38);
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(10);
+      doc.text(subtitle, margin, 58);
+    };
+
+    const drawFooter = () => {
+      const total = doc.getNumberOfPages();
+      for (let i = 1; i <= total; i++) {
+        doc.setPage(i);
+        doc.setDrawColor(220);
+        doc.line(margin, pageH - 28, pageW - margin, pageH - 28);
+        doc.setFontSize(8);
+        doc.setTextColor(140);
+        doc.text("EcoLens AI — Sustainable Waste Intelligence", margin, pageH - 14);
+        doc.text(`Page ${i} of ${total}`, pageW - margin, pageH - 14, { align: "right" });
+      }
+    };
+
+    drawHeaderBand(
+      "EcoLens AI — PDF Disposal Report",
+      `${fileName} · Generated ${new Date().toLocaleString()}`,
+    );
+    let y = 100;
+    doc.setTextColor(20);
+
+    // Cover summary
+    const totalItems = pages.reduce((a, p) => a + p.items.length, 0);
+    const counts: Record<string, number> = {};
+    pages.forEach((p) =>
+      p.items.forEach((it) => {
+        counts[it.class] = (counts[it.class] ?? 0) + 1;
+      }),
+    );
+
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(18);
-    doc.text("EcoLens AI — PDF Disposal Report", margin, 36);
-    doc.setFontSize(9);
-    doc.setFont("helvetica", "normal");
-    doc.text(`${fileName} · ${new Date().toLocaleString()}`, margin, 52);
-    y = 80;
+    doc.setFontSize(14);
+    doc.text("Executive summary", margin, y);
+    y += 8;
+    doc.setDrawColor(34, 139, 87);
+    doc.setLineWidth(1.2);
+    doc.line(margin, y, margin + 80, y);
+    doc.setLineWidth(0.5);
+    y += 16;
+
+    const stats: [string, string][] = [
+      ["Pages scanned", String(pages.length)],
+      ["Items detected", String(totalItems)],
+      [
+        "Top category",
+        Object.entries(counts).sort((a, b) => b[1] - a[1])[0]
+          ? DISPOSAL[
+              Object.entries(counts).sort((a, b) => b[1] - a[1])[0][0] as keyof typeof DISPOSAL
+            ].label
+          : "—",
+      ],
+    ];
+    const colW = contentW / stats.length;
+    stats.forEach(([label, value], i) => {
+      const x = margin + i * colW;
+      doc.setFillColor(245, 250, 246);
+      doc.roundedRect(x + 4, y, colW - 8, 56, 6, 6, "F");
+      doc.setTextColor(34, 100, 60);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(20);
+      doc.text(value, x + 16, y + 28);
+      doc.setTextColor(110);
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(9);
+      doc.text(label.toUpperCase(), x + 16, y + 46);
+    });
+    y += 76;
     doc.setTextColor(20);
 
     pages.forEach((pg) => {
-      if (y > pageH - 200) {
+      // Need at least ~180pt for a page section header + thumbnail
+      if (y > pageH - 220) {
         doc.addPage();
         y = margin;
       }
+
+      // Page section header
+      doc.setFillColor(34, 139, 87);
+      doc.roundedRect(margin, y, contentW, 26, 4, 4, "F");
+      doc.setTextColor(255);
       doc.setFont("helvetica", "bold");
-      doc.setFontSize(13);
-      doc.text(`Page ${pg.pageNumber}`, margin, y);
-      y += 14;
+      doc.setFontSize(12);
+      doc.text(`Page ${pg.pageNumber}`, margin + 12, y + 17);
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(10);
+      doc.text(
+        `${pg.items.length} item${pg.items.length === 1 ? "" : "s"} detected`,
+        pageW - margin - 12,
+        y + 17,
+        { align: "right" },
+      );
+      y += 36;
+      doc.setTextColor(20);
+
+      // Page thumbnail + summary side by side
+      const thumbW = 150;
+      const ratio = pg.thumbHeight / pg.thumbWidth;
+      const thumbH = Math.min(200, thumbW * ratio);
+      try {
+        doc.addImage(pg.thumbnail, "JPEG", margin, y, thumbW, thumbH);
+        doc.setDrawColor(220);
+        doc.rect(margin, y, thumbW, thumbH);
+      } catch {
+        // ignore image errors
+      }
+
+      const textX = margin + thumbW + 16;
+      const textW = contentW - thumbW - 16;
+      let ty = y + 4;
       if (pg.summary) {
         doc.setFont("helvetica", "italic");
         doc.setFontSize(10);
         doc.setTextColor(90);
-        const s = doc.splitTextToSize(pg.summary, pageW - margin * 2);
-        doc.text(s, margin, y);
-        y += s.length * 12 + 4;
-        doc.setTextColor(20);
+        const lines = doc.splitTextToSize(pg.summary, textW);
+        doc.text(lines, textX, ty + 8);
+        ty += lines.length * 12 + 8;
       }
+      doc.setTextColor(20);
+
       if (pg.items.length === 0) {
         doc.setFont("helvetica", "italic");
         doc.setFontSize(10);
         doc.setTextColor(140);
-        doc.text("No waste items detected on this page.", margin, y);
-        y += 18;
+        doc.text("No waste items detected on this page.", textX, ty + 12);
         doc.setTextColor(20);
       } else {
-        pg.items.forEach((it) => {
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(10);
+        doc.text("Detected materials:", textX, ty + 12);
+        ty += 24;
+        doc.setFont("helvetica", "normal");
+        pg.items.slice(0, 6).forEach((it) => {
           const d = DISPOSAL[it.class];
-          const dec = DECOMPOSITION[it.class];
-          if (y > pageH - 90) {
-            doc.addPage();
-            y = margin;
-          }
-          doc.setFont("helvetica", "bold");
-          doc.setFontSize(11);
-          doc.text(`• ${it.label} — ${d.label} (${Math.round(it.confidence * 100)}%)`, margin, y);
-          y += 14;
-          doc.setFont("helvetica", "normal");
           doc.setFontSize(10);
-          const bin = doc.splitTextToSize(`Disposal: ${d.bin}`, pageW - margin * 2 - 10);
-          doc.text(bin, margin + 10, y);
-          y += bin.length * 12;
-          const decT = doc.splitTextToSize(
-            `Decomposition (${dec.time}): ${dec.method}`,
-            pageW - margin * 2 - 10,
+          doc.text(
+            `• ${d.emoji} ${it.label} — ${d.label} (${Math.round(it.confidence * 100)}%)`,
+            textX,
+            ty,
           );
-          doc.text(decT, margin + 10, y);
-          y += decT.length * 12 + 4;
+          ty += 13;
         });
       }
-      y += 8;
-      doc.setDrawColor(225);
-      doc.line(margin, y, pageW - margin, y);
-      y += 14;
+
+      y += Math.max(thumbH, ty - y) + 14;
+
+      // Per-item detail cards (with cropped image)
+      pg.items.forEach((it, idx) => {
+        const d = DISPOSAL[it.class];
+        const dec = DECOMPOSITION[it.class];
+        const cardH = 110;
+        if (y + cardH > pageH - 50) {
+          doc.addPage();
+          y = margin;
+        }
+
+        // Card background
+        doc.setFillColor(250, 252, 250);
+        doc.setDrawColor(220);
+        doc.roundedRect(margin, y, contentW, cardH, 8, 8, "FD");
+
+        // Left accent bar
+        doc.setFillColor(34, 139, 87);
+        doc.roundedRect(margin, y, 4, cardH, 2, 2, "F");
+
+        // Crop image on the left of the card
+        const imgBox = 90;
+        const imgX = margin + 14;
+        const imgY = y + 10;
+        if (pg.itemCrops[idx]) {
+          try {
+            doc.addImage(pg.itemCrops[idx], "JPEG", imgX, imgY, imgBox, imgBox);
+            doc.setDrawColor(210);
+            doc.rect(imgX, imgY, imgBox, imgBox);
+          } catch {
+            // ignore
+          }
+        } else {
+          doc.setFillColor(235, 240, 235);
+          doc.roundedRect(imgX, imgY, imgBox, imgBox, 4, 4, "F");
+          doc.setFontSize(28);
+          doc.setTextColor(34, 139, 87);
+          doc.text(d.emoji, imgX + imgBox / 2, imgY + imgBox / 2 + 8, { align: "center" });
+        }
+
+        // Text content
+        const tx = imgX + imgBox + 14;
+        const tw = contentW - (imgBox + 14 + 14 + 4);
+        let cy = y + 22;
+
+        doc.setTextColor(20);
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(12);
+        doc.text(`${d.emoji}  ${it.label}`, tx, cy);
+
+        // Class badge
+        doc.setFillColor(34, 139, 87);
+        const badgeText = d.label.toUpperCase();
+        doc.setFontSize(8);
+        const badgeW = doc.getTextWidth(badgeText) + 12;
+        doc.roundedRect(tx, cy + 6, badgeW, 14, 7, 7, "F");
+        doc.setTextColor(255);
+        doc.text(badgeText, tx + 6, cy + 16);
+
+        doc.setTextColor(110);
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(9);
+        doc.text(
+          `Confidence: ${Math.round(it.confidence * 100)}%`,
+          tx + badgeW + 10,
+          cy + 16,
+        );
+        cy += 32;
+
+        doc.setTextColor(40);
+        doc.setFontSize(9);
+        doc.setFont("helvetica", "bold");
+        doc.text("Disposal:", tx, cy);
+        doc.setFont("helvetica", "normal");
+        const binLines = doc.splitTextToSize(d.bin, tw - 50);
+        doc.text(binLines, tx + 46, cy);
+        cy += binLines.length * 11 + 2;
+
+        doc.setFont("helvetica", "bold");
+        doc.text("Decompose:", tx, cy);
+        doc.setFont("helvetica", "normal");
+        const decLines = doc.splitTextToSize(`${dec.time} — ${dec.method}`, tw - 60);
+        doc.text(decLines, tx + 56, cy);
+
+        // CO2 savings badge bottom right
+        doc.setFillColor(232, 245, 234);
+        doc.setTextColor(34, 100, 60);
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(9);
+        const co2 = `CO₂e saved: ${d.carbonGramsSaved} g`;
+        const co2W = doc.getTextWidth(co2) + 14;
+        doc.roundedRect(margin + contentW - co2W - 12, y + cardH - 22, co2W, 14, 7, 7, "F");
+        doc.text(co2, margin + contentW - co2W - 5, y + cardH - 12);
+        doc.setTextColor(20);
+
+        y += cardH + 10;
+      });
+
+      y += 6;
     });
 
+    drawFooter();
     doc.save(`ecolens-pdf-report-${new Date().toISOString().slice(0, 10)}.pdf`);
   };
 
