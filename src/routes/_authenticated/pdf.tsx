@@ -17,7 +17,10 @@ export const Route = createFileRoute("/_authenticated/pdf")({
 interface PageResult {
   pageNumber: number;
   thumbnail: string; // dataURL
+  thumbWidth: number;
+  thumbHeight: number;
   items: DetectedItem[];
+  itemCrops: string[]; // per-item cropped dataURL aligned to items[]
   summary: string;
 }
 
