@@ -375,7 +375,7 @@ function PdfPage() {
         doc.setTextColor(34, 100, 60);
         doc.setFont("helvetica", "bold");
         doc.setFontSize(9);
-        const co2 = `CO₂e saved: ${d.carbonGramsSaved} g`;
+        const co2 = `CO2e saved: ${d.carbonGramsSaved} g`;
         const co2W = doc.getTextWidth(co2) + 14;
         doc.roundedRect(margin + contentW - co2W - 12, y + cardH - 22, co2W, 14, 7, 7, "F");
         doc.text(co2, margin + contentW - co2W - 5, y + cardH - 12);
