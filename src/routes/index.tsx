@@ -34,13 +34,13 @@ function Landing() {
         <div className="absolute inset-0 -z-10" style={{ background: "var(--gradient-hero)" }} />
         <div className="container mx-auto px-4 py-20 md:py-28 grid lg:grid-cols-2 gap-12 items-center">
           <div>
-            <div className="inline-flex items-center gap-2 rounded-full glass px-3 py-1 text-xs font-medium mb-6">
+            <div className="inline-flex items-center gap-2 rounded-full glass px-3 py-1 mb-6">
               <Sparkles className="h-3.5 w-3.5 text-primary" />
-              Powered by on-device + cloud AI
+              <span className="eyebrow">Powered by on-device + cloud AI</span>
             </div>
             <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold leading-[1.05]">
-              Sort waste <span className="eco-gradient-text">smarter,</span><br/>
-              waste <span className="eco-gradient-text">less.</span>
+              Sort waste <span className="title-gradient">smarter,</span><br/>
+              waste <span className="title-gradient">less.</span>
             </h1>
             <p className="mt-6 text-lg text-muted-foreground max-w-xl">
               EcoLens AI identifies plastic, paper, metal, glass, organic, e-waste and cloth from a photo, your live camera, an uploaded video, a PDF, or just your voice — and tells you exactly what to do with it.
@@ -63,7 +63,7 @@ function Landing() {
                 { v: "100%", l: "private" },
               ].map((s) => (
                 <div key={s.l}>
-                  <div className="text-3xl font-bold eco-gradient-text">{s.v}</div>
+                  <div className="hero-number text-3xl title-gradient">{s.v}</div>
                   <div className="text-xs text-muted-foreground mt-1">{s.l}</div>
                 </div>
               ))}
@@ -78,7 +78,7 @@ function Landing() {
                 return (
                   <div
                     key={c}
-                    className="glass rounded-2xl p-5 soft-shadow hover:eco-shadow hover:-translate-y-1 transition-all"
+                    className="glass-pane p-5 hover:eco-shadow hover:-translate-y-1 transition-all"
                     style={{ animationDelay: `${i * 80}ms` }}
                   >
                     <div className="text-4xl mb-2">{d.emoji}</div>
@@ -102,7 +102,7 @@ function Landing() {
           {FEATURES.map((f) => {
             const Icon = f.icon;
             return (
-              <div key={f.title} className="glass rounded-2xl p-6 soft-shadow group hover:eco-shadow transition-all">
+              <div key={f.title} className="glass-pane p-6 group hover:eco-shadow transition-all">
                 <div className="grid h-11 w-11 place-items-center rounded-xl text-primary-foreground mb-4 group-hover:scale-110 transition-transform eco-shadow" style={{ background: "var(--gradient-primary)" }}>
                   <Icon className="h-5 w-5" />
                 </div>
@@ -116,7 +116,7 @@ function Landing() {
 
       {/* CTA */}
       <section className="container mx-auto px-4 pb-20">
-        <div className="glass rounded-3xl p-10 md:p-16 text-center eco-shadow relative overflow-hidden">
+        <div className="glass-pane rounded-3xl p-10 md:p-16 text-center relative overflow-hidden">
           <div className="absolute inset-0 -z-10 opacity-30" style={{ background: "var(--gradient-hero)" }} />
           <Recycle className="h-12 w-12 mx-auto text-primary mb-4" />
           <h2 className="text-3xl md:text-4xl font-bold">Every correct sort matters.</h2>
