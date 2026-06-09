@@ -58,7 +58,7 @@ function Landing() {
             </div>
             <div className="mt-10 grid grid-cols-3 gap-6 max-w-md">
               {[
-                { v: "7", l: "waste classes" },
+                { v: "12", l: "waste classes" },
                 { v: "5", l: "input modes" },
                 { v: "100%", l: "private" },
               ].map((s) => (
